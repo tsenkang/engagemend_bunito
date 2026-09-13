@@ -1,0 +1,831 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --base: #fbf8f1;
+    --ink: #102c26;
+    --accent: #c4b72a;
+
+    /* Componentes RGB para as utilidades de opacidade do Tailwind. */
+    --base-rgb: 251 248 241;
+    --ink-rgb: 16 44 38;
+    --accent-rgb: 196 183 42;
+
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Âncora (#contato) funcionando sem JS, sem passar por baixo do header. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  [id] {
+    scroll-margin-top: 96px;
+  }
+
+  body {
+    background-color: rgb(var(--base-rgb));
+    color: rgb(var(--ink-rgb));
+    font-family: var(--font-body), 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* Nenhuma largura pode empurrar a página para os lados. */
+    overflow-x: hidden;
+  }
+
+  /* Superfícies do navegador: nada fica com o padrão de ninguém. */
+  ::selection {
+    background-color: rgb(var(--accent-rgb));
+    color: rgb(var(--ink-rgb));
+  }
+
+  :root {
+    accent-color: rgb(var(--ink-rgb));
+    caret-color: rgb(var(--ink-rgb));
+    scrollbar-color: rgb(var(--ink-rgb) / 0.28) rgb(var(--base-rgb));
+    scrollbar-width: thin;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: rgb(var(--base-rgb));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--ink-rgb) / 0.24);
+    border: 3px solid rgb(var(--base-rgb));
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(var(--ink-rgb) / 0.4);
+  }
+
+  /* Anel de foco: 2px em ink, 2px de deslocamento. Nunca mostarda. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--ink-rgb));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Dentro de bloco escuro o anel inverte, senão some no fundo. */
+  .on-ink :focus-visible {
+    outline-color: rgb(var(--base-rgb));
+  }
+
+  .on-ink ::selection {
+    background-color: rgb(var(--accent-rgb));
+    color: rgb(var(--ink-rgb));
+  }
+
+  a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+  }
+
+  /* Números de tabela e métrica alinham em coluna. */
+  table,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  video {
+    display: block;
+  }
+}
+
+@layer components {
+  /* ---------------------------------------------------------------- */
+  /* Tipografia de display                                             */
+  /* ---------------------------------------------------------------- */
+
+  /**
+   * A manchete do sistema: Archivo em caixa alta, peso 800, com o eixo
+   * de largura fechado. É a condensada que deixa uma frase inteira
+   * ocupar 110px sem estourar a margem — na largura normal ela só
+   * caberia a menos da metade disso.
+   */
+  /**
+   * Archivo é a fonte de display do sistema. **Caixa alta só entra em
+   * frase curta** — um a quatro palavras. Frase longa em maiúscula vira
+   * bloco de grito: cansa de ler e some a diferença entre as palavras.
+   * Quem precisa de caixa alta pede `.display-caps`.
+   */
+  .display {
+    font-family: var(--font-display), Archivo, system-ui, sans-serif;
+    font-weight: 800;
+    font-variation-settings: 'wdth' 86;
+    line-height: 0.9;
+    letter-spacing: -0.025em;
+  }
+
+  .display-caps {
+    text-transform: uppercase;
+    line-height: 0.86;
+    letter-spacing: -0.02em;
+  }
+
+  /* Onde a frase é curta, a largura abre e o peso sobe. */
+  .display-wide {
+    font-variation-settings: 'wdth' 100;
+  }
+
+  /**
+   * Manchete da Home. Amarrada à linha mais longa, para que ela encoste
+   * na margem em qualquer largura sem nunca vazar.
+   */
+  /**
+   * A manchete fecha ainda mais a largura: é o eixo `wdth` do Archivo
+   * que compra o tamanho. A 86 a linha mais longa pedia 1873px e
+   * quebrava em cinco linhas; a 72 ela cabe nas quebras fixadas.
+   *
+   * O divisor é 10,8. (O comentário antigo dizia 15,1, de quando a
+   * manchete tinha quatro linhas; ela foi para cinco, a linha mais
+   * longa encurtou e o número nunca foi corrigido — o código sempre
+   * esteve certo, a nota é que estava velha.) Remedido na Archivo
+   * real a 'wdth' 72: a linha mais longa pede 9,72px de largura por
+   * 1px de corpo, então a 10,8 ela enche 0,90 da largura.
+   */
+  .d-hero {
+    font-variation-settings: 'wdth' 72;
+    text-transform: uppercase;
+    line-height: 0.86;
+    font-size: clamp(34px, calc((100vw - 112px) / 10.8), 168px);
+  }
+
+  /**
+   * Sem `nowrap`, de propósito.
+   *
+   * A escala da manchete é calibrada para a Archivo condensada. Se ela
+   * não chegar a tempo, a fonte de reserva é mais larga e travar a linha
+   * cortava o texto na margem — palavra sumindo da tela. Deixando
+   * refluir, o pior caso é uma linha a mais, e nada se perde.
+   */
+
+  /**
+   * Título de seção: frase longa. Medido, a linha mais longa da Home
+   * ("precisam sair de suas cidades pequenas") pede 20,3px de largura
+   * por 1px de corpo — a 60px ela ocupa 1219px dos 1328 disponíveis e
+   * as quebras que o briefing fixou sobrevivem. Acima disso a frase
+   * quebra sozinha e sobra palavra órfã.
+   */
+  .d-section {
+    font-size: clamp(30px, 5vw, 72px);
+    text-wrap: balance;
+  }
+
+  /* Onde as quebras são desenhadas, o navegador não pode reequilibrar. */
+  .d-section.lines {
+    text-wrap: wrap;
+  }
+
+  /**
+   * A citação tem duas quebras fixas e a linha mais longa do site
+   * (28,06 de razão). Só com o eixo de largura fechado ela cabe grande.
+   */
+  .d-quote {
+    font-variation-settings: 'wdth' 80;
+    font-size: clamp(26px, calc((100vw - 112px) / 22.5), 88px);
+  }
+
+  /**
+   * O tamanho gigante, reservado a frase de duas ou três palavras.
+   * Divisor amarrado à maior delas ("Sua cidade tem um evento").
+   */
+  /** Frase de duas ou três palavras: é aqui que a caixa alta pertence. */
+  .d-giant {
+    font-variation-settings: 'wdth' 72;
+    text-transform: uppercase;
+    line-height: 0.86;
+    letter-spacing: -0.02em;
+    font-size: clamp(40px, calc((100vw - 112px) / 11.9), 184px);
+  }
+
+  /**
+   * A manchete da 404. Duas linhas de 11 caracteres — a metade das
+   * linhas do resto do site —, e por isso ela não pode herdar o divisor
+   * de `.d-giant`: a 11,9 a frase ocuparia 42% da largura e a página
+   * voltaria a ser tímida.
+   *
+   * Medido na Archivo real a 'wdth' 72: "ESTA PÁGINA" pede 5,037px de
+   * largura por 1px de corpo. O divisor sai do preenchimento que o
+   * próprio site já pratica — `.d-hero` enche 0,90 da largura e
+   * `.d-quote` 0,91 —, então 5,037 / 0,90 = 5,6.
+   *
+   * O teto de 184px é o mesmo do sistema, e por causa dele a linha
+   * curta chega ao topo já a 1142px de viewport. Acima disso o
+   * preenchimento cai para 0,70, que é a proporção de `.d-giant`
+   * (0,73). Os dois extremos são medidas da casa: não há número novo.
+   *
+   * O piso é 48px em vez dos 40px do resto porque a fórmula desconta
+   * 112px de margem, que é a do desktop — no celular a margem é 48px e
+   * sobra largura que o cálculo não enxerga. Não pode passar disso:
+   * medido a 320px com a barra de rolagem, sobram 262px e a linha a
+   * 52px pedia exatamente 262 — quebrava em duas. A 48px ela pede 242.
+   */
+  .d-notfound {
+    font-variation-settings: 'wdth' 72;
+    text-transform: uppercase;
+    line-height: 0.86;
+    letter-spacing: -0.02em;
+    font-size: clamp(48px, calc((100vw - 112px) / 5.6), 184px);
+  }
+
+  /* Rótulo: monoespaçada, caixa alta, bem espaçada. */
+  .label {
+    font-family: var(--font-mono), 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Superfícies                                                       */
+  /* ---------------------------------------------------------------- */
+
+  /**
+   * A tela do campo de curvas fica fixa atrás de tudo. O fundo liso do
+   * `body` continua embaixo dela: sem JavaScript, sem WebGL ou com
+   * `reduce`, é ele que aparece, e nada quebra.
+   */
+  .field {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    height: 100%;
+    width: 100%;
+    pointer-events: none;
+  }
+
+  /* O conteúdo passa por cima da tela. */
+  .layer {
+    position: relative;
+    z-index: 1;
+  }
+
+  /**
+   * Cursor próprio. `difference` faz o ponto inverter o que estiver
+   * embaixo, então ele se enxerga no creme e no verde escuro sem
+   * precisar de duas cores.
+   */
+  .cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 60;
+    height: 14px;
+    width: 14px;
+    border-radius: 9999px;
+    background-color: rgb(var(--accent-rgb));
+    mix-blend-mode: difference;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  /* Em tela de toque não existe cursor para seguir. */
+  @media (hover: none), (prefers-reduced-motion: reduce) {
+    .cursor {
+      display: none;
+    }
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Rampa ascendente (motivo gráfico)                                 */
+  /* ---------------------------------------------------------------- */
+
+  .ramp {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    height: 28px;
+  }
+
+  .ramp-dot {
+    display: block;
+    flex: none;
+    border-radius: 9999px;
+    background-color: rgb(var(--ink-rgb));
+    transform-origin: bottom center;
+  }
+
+  .on-ink .ramp-dot {
+    background-color: rgb(var(--base-rgb));
+  }
+
+  /* O último ponto é o único mostarda: é onde a rampa chega. */
+  .ramp-dot:last-child {
+    background-color: rgb(var(--accent-rgb));
+    opacity: 1 !important;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Cartões do trilho                                                 */
+  /* ---------------------------------------------------------------- */
+
+  .panel {
+    transition: border-color 400ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 400ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .panel:hover {
+    border-color: rgb(var(--accent-rgb) / 0.55);
+    background-color: rgb(var(--base-rgb) / 0.1);
+    transform: translateY(-6px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel {
+      transition: none;
+    }
+    .panel:hover {
+      transform: none;
+    }
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Trilho horizontal das etapas                                      */
+  /* ---------------------------------------------------------------- */
+
+  .track {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    will-change: transform;
+  }
+
+  .track > li {
+    flex: 0 0 auto;
+    width: min(78vw, 460px);
+  }
+
+  /**
+   * Campo de curvas de nível ao fundo. É uma imagem gerada, não uma
+   * biblioteca 3D: mesmo efeito, sem 600kB de JavaScript no orçamento
+   * de performance.
+   */
+  .texture {
+    position: relative;
+    isolation: isolate;
+  }
+
+  /**
+   * A textura estática só vale nos blocos escuros, que pintam por cima
+   * da tela do WebGL. Nas seções claras quem faz o relevo é a tela.
+   */
+  .texture-light::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/texture-light.svg');
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+  }
+
+  /* Cartão sobre o bloco escuro: clareia o próprio ink, sem cor nova. */
+  .panel {
+    background-color: rgb(var(--base-rgb) / 0.06);
+    border: 1px solid rgb(var(--base-rgb) / 0.14);
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Grade                                                             */
+  /* ---------------------------------------------------------------- */
+
+  .shell {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+
+  @media (min-width: 768px) {
+    .shell {
+      padding-inline: 48px;
+    }
+  }
+
+  .shell-wide {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+
+  @media (min-width: 768px) {
+    .shell-wide {
+      padding-inline: 40px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .shell-wide {
+      padding-inline: 56px;
+    }
+  }
+
+  /**
+   * O hero ocupa a primeira tela inteira, descontando o header, para que
+   * a manchete e o bloco de chamada fiquem nas duas pontas do enquadro
+   * em vez de empilhados no topo com um vazio embaixo.
+   */
+  .hero-fold {
+    min-height: calc(100svh - 64px);
+  }
+
+  @media (min-width: 768px) {
+    .hero-fold {
+      min-height: calc(100svh - 72px);
+    }
+  }
+
+  /**
+   * Quebras de linha propostas: cada linha é um bloco, mas pode refluir
+   * se não couber.
+   */
+  .lines > * {
+    display: block;
+  }
+
+  .headline-balanced {
+    text-wrap: balance;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Faixa rolante                                                     */
+  /* ---------------------------------------------------------------- */
+
+  .marquee-strip {
+    overflow: hidden;
+    border-block: 1px solid rgb(var(--ink-rgb) / 0.16);
+    padding-block: 14px;
+  }
+
+  .on-ink .marquee-strip {
+    border-color: rgb(var(--base-rgb) / 0.2);
+  }
+
+  .d-strip {
+    font-size: clamp(26px, 3.6vw, 52px);
+  }
+
+  /**
+   * A faixa só anda quando o visitante aceita movimento. Fora disso ela
+   * fica parada mostrando as primeiras palavras — e não salta para o
+   * fim, que é o que a regra global de `reduce` faria com a animação.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    .marquee {
+      animation: marquee-scroll 42s linear infinite;
+    }
+  }
+
+  .marquee {
+    display: flex;
+    width: max-content;
+    align-items: center;
+    will-change: transform;
+  }
+
+  .marquee-item {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    padding-inline: 16px;
+  }
+
+  .marquee-dot {
+    height: 10px;
+    width: 10px;
+    flex: none;
+    border-radius: 9999px;
+    background-color: rgb(var(--accent-rgb));
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Régua da esquerda (elemento de assinatura)                        */
+  /* ---------------------------------------------------------------- */
+
+  .rail {
+    position: fixed;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    z-index: 20;
+    display: none;
+    width: 2px;
+    pointer-events: none;
+  }
+
+  @media (min-width: 1280px) {
+    .rail {
+      display: block;
+    }
+  }
+
+  .rail-track {
+    position: absolute;
+    inset: 0;
+    background-color: rgb(var(--ink-rgb) / 0.12);
+    transition: background-color 500ms ease-out;
+  }
+
+  .rail-fill {
+    position: absolute;
+    inset: 0;
+    background-color: rgb(var(--accent-rgb));
+    transform: scaleY(0);
+    transform-origin: top center;
+  }
+
+  .rail-mark {
+    position: absolute;
+    left: 50%;
+    margin-left: -5px;
+    margin-top: -5px;
+    height: 10px;
+    width: 10px;
+    border-radius: 9999px;
+    border: 2px solid rgb(var(--ink-rgb) / 0.25);
+    background-color: rgb(var(--base-rgb));
+    opacity: 0;
+    transition: opacity 400ms ease-out, background-color 300ms ease-out,
+      border-color 300ms ease-out;
+  }
+
+  .rail-mark[data-near='true'] {
+    opacity: 1;
+  }
+
+  .rail-mark[data-lit='true'] {
+    background-color: rgb(var(--accent-rgb));
+    border-color: rgb(var(--accent-rgb));
+  }
+
+  /* Sobre bloco escuro a régua inverte, senão o trilho some no fundo. */
+  [data-zone='dark'] .rail-track {
+    background-color: rgb(var(--base-rgb) / 0.25);
+  }
+
+  [data-zone='dark'] .rail-mark {
+    background-color: rgb(var(--ink-rgb));
+    border-color: rgb(var(--base-rgb) / 0.3);
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Linha do tempo de /servicos                                       */
+  /* ---------------------------------------------------------------- */
+
+  .timeline {
+    position: relative;
+    padding-left: 56px;
+  }
+
+  @media (min-width: 768px) {
+    .timeline {
+      padding-left: 72px;
+    }
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 44px;
+    bottom: 10px;
+    width: 2px;
+    background-color: rgb(var(--ink-rgb) / 0.15);
+  }
+
+  .timeline-fill {
+    position: absolute;
+    left: 19px;
+    top: 44px;
+    bottom: 10px;
+    width: 2px;
+    background-color: rgb(var(--accent-rgb));
+    transform: scaleY(0);
+    transform-origin: top center;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -56px;
+    top: 0;
+    display: flex;
+    height: 40px;
+    width: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 2px solid rgb(var(--ink-rgb) / 0.2);
+    background-color: rgb(var(--base-rgb));
+    font-variant-numeric: tabular-nums;
+    transition: background-color 400ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @media (min-width: 768px) {
+    .timeline-dot {
+      left: -72px;
+    }
+  }
+
+  .timeline-item[data-active='true'] .timeline-dot {
+    background-color: rgb(var(--accent-rgb));
+    border-color: rgb(var(--accent-rgb));
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Cortinas e etapas empilhadas                                      */
+  /* ---------------------------------------------------------------- */
+
+  .preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    background-color: rgb(var(--ink-rgb));
+    color: rgb(var(--base-rgb));
+    animation: preloader-failsafe 1ms linear 2200ms forwards;
+  }
+
+  [data-visited='1'] .preloader {
+    display: none;
+  }
+
+  .preloader-count {
+    font-family: var(--font-mono), 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 20px;
+    letter-spacing: 0.14em;
+  }
+
+  .route-curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: none;
+    background-color: rgb(var(--ink-rgb));
+    transform: scaleY(0);
+  }
+
+  /**
+   * Máscara do reveal. Os respiros evitam que ela corte glifo, e as
+   * margens negativas devolvem o espaço — o ritmo da manchete não muda.
+   *
+   * As duas medidas saem das métricas da Archivo: ascent 0,88em e
+   * descent 0,21em, contra `line-height` 0,86em. A caixa de linha fica
+   * 0,115em menor que o glifo em cima e 0,095em embaixo.
+   *
+   * Embaixo é a perna do "Q". **Em cima são os acentos:** sem este
+   * respiro a máscara decepa o til e o agudo, e a manchete da Home
+   * lia "NAO PERDE TALENTO" em vez de "NÃO".
+   *
+   * Estender a máscara para cima não vaza a animação: as letras entram
+   * por baixo (`yPercent` positivo), nunca por cima.
+   */
+  .reveal-line {
+    display: block;
+    overflow: hidden;
+    padding-top: 0.13em;
+    margin-top: -0.13em;
+    padding-bottom: 0.1em;
+    margin-bottom: -0.1em;
+  }
+
+  .reveal-inner {
+    display: block;
+  }
+
+  /* Cada letra é sua própria peça, para subir com atraso entre elas. */
+  .reveal-char {
+    display: inline-block;
+    will-change: transform;
+  }
+
+  /**
+   * MANTIDO SEM USO. O pin empilhado mostrava uma etapa de cada vez numa
+   * tela de 900px: sobravam 70% de vazio, e foi parte do que o Benjamin
+   * chamou de básico. As etapas viraram quatro cartões sobre o bloco
+   * escuro. Este bloco fica aqui porque o efeito 5 do briefing pede pin
+   * — se ele quiser de volta, é só religar `pinnedSteps` no Motion.
+   */
+  [data-steps][data-stacked='true'] [data-steps-pin] {
+    display: flex;
+    min-height: calc(100svh - 72px);
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  [data-steps][data-stacked='true'] .steps-list {
+    position: relative;
+    min-height: 300px;
+    border: 0;
+    margin-top: 48px;
+  }
+
+  [data-steps][data-stacked='true'] .steps-list > li {
+    position: absolute;
+    inset: 0 0 auto 0;
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) 2.6fr;
+    grid-template-rows: auto auto;
+    column-gap: 48px;
+    align-items: start;
+    border-top: 0;
+    padding: 0;
+  }
+
+  [data-steps][data-stacked='true'] .step-numeral {
+    grid-area: 1 / 1 / 3 / 2;
+    font-size: 184px;
+  }
+
+  [data-steps][data-stacked='true'] .step-title {
+    grid-area: 1 / 2 / 2 / 3;
+    font-size: 72px;
+  }
+
+  [data-steps][data-stacked='true'] .step-body {
+    grid-area: 2 / 2 / 3 / 3;
+    margin-top: 24px;
+    max-width: 46ch;
+    font-size: 24px;
+  }
+}
+
+/**
+ * Folha mínima que o Lenis precisa. Copiada do pacote em vez de
+ * importada para não passar um CSS de node_modules pelo pipeline.
+ */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes preloader-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
