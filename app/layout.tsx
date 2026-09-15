@@ -84,9 +84,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <script dangerouslySetInnerHTML={{ __html: VISITED_SCRIPT }} />
 
-        {/* Sem JavaScript a cortina nunca sairia sozinha. */}
+        {/* Sem JavaScript a cortina e a costura nunca sairiam sozinhas. */}
         <noscript>
-          <style>{`.preloader,.rail{display:none!important}`}</style>
+          <style>{`.preloader,.rail,.dissolve{display:none!important}`}</style>
         </noscript>
 
         <a

@@ -10,8 +10,14 @@ export const LAYOUT_EVENT = 'engagemend:layout';
  * Elemento de assinatura: a régua da marca virando navegação.
  *
  * Filete fixo à esquerda que enche em mostarda conforme a página rola.
- * Na seção das etapas ele ganha quatro marcadores, um por etapa, que
- * acendem quando cada uma entra.
+ * Na altura da seção das etapas ele ganha um marcador, que acende
+ * quando ela chega.
+ *
+ * **Eram quatro, um por etapa.** Faziam sentido enquanto o scroll
+ * conduzia o trilho horizontal: cada marcador era mesmo o ponto em que
+ * uma etapa entrava. Com o baralho quem conduz é a mão, as quatro
+ * etapas acontecem paradas no mesmo lugar do documento — e quatro
+ * pontos espremidos num palmo de régua diriam algo que não é verdade.
  *
  * Lê o scroll da janela direto, num `requestAnimationFrame` próprio —
  * não cria ScrollTrigger e por isso não gasta o orçamento de dois
@@ -24,7 +30,7 @@ export function ScrollProgress() {
   const [marks, setMarks] = useState<readonly number[]>([]);
   const [progress, setProgress] = useState(0);
 
-  /** Fração do documento em que cada etapa passa a ser a ativa. */
+  /** Fração do documento em que a seção das etapas passa pelo meio da tela. */
   const measure = useCallback(() => {
     const section = document.querySelector<HTMLElement>('[data-steps]');
     const scrollable = document.documentElement.scrollHeight - window.innerHeight;
@@ -34,23 +40,15 @@ export function ScrollProgress() {
       return;
     }
 
-    const steps = section.querySelectorAll('[data-step]').length;
-    if (steps === 0) {
+    if (section.querySelectorAll('[data-step]').length === 0) {
       setMarks([]);
       return;
     }
 
-    // Com o pin, a altura da seção já inclui a distância de scrub.
     const top = section.getBoundingClientRect().top + window.scrollY;
-    const span = section.offsetHeight;
-    const next: number[] = [];
+    const meio = top + section.offsetHeight / 2;
 
-    for (let i = 0; i < steps; i += 1) {
-      const at = top + (span * (i + 0.5)) / steps;
-      next.push(Math.min(1, Math.max(0, at / scrollable)));
-    }
-
-    setMarks(next);
+    setMarks([Math.min(1, Math.max(0, meio / scrollable))]);
   }, []);
 
   useEffect(() => {
@@ -88,8 +86,8 @@ export function ScrollProgress() {
     };
   }, [measure, pathname]);
 
-  // Os marcadores só interessam perto da seção das etapas; fora dela
-  // seriam quatro pontos soltos numa régua que não mede mais nada.
+  // O marcador só interessa perto da seção das etapas; fora dela seria
+  // um ponto solto numa régua que não mede mais nada.
   const first = marks[0];
   const last = marks[marks.length - 1];
   const near =

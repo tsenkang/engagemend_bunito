@@ -1,3 +1,4 @@
+import { PixelDissolve } from '@/components/ui/PixelDissolve';
 import { Ramp } from '@/components/ui/Ramp';
 import { home } from '@/lib/content';
 
@@ -9,6 +10,8 @@ import { home } from '@/lib/content';
 export function Statement() {
   return (
     <section className="texture border-y border-ink/16 py-12 md:py-20">
+      <PixelDissolve tone="ink" />
+
       <div className="shell-wide" data-enter="" data-skew="">
         <Ramp count={8} />
 

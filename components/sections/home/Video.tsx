@@ -1,3 +1,4 @@
+import { PixelDissolve } from '@/components/ui/PixelDissolve';
 import { home } from '@/lib/content';
 
 /**
@@ -10,13 +11,19 @@ import { home } from '@/lib/content';
  */
 export function Video() {
   return (
-    <section className="overflow-hidden bg-ink py-6 md:py-12">
+    <section className="relative overflow-hidden bg-ink py-6 md:py-12">
+      <PixelDissolve tone="base" />
+
       <figure className="shell-wide" data-video="">
         <div className="overflow-hidden rounded" data-video-frame="">
           <video
             className="aspect-video w-full rounded"
             controls
-            preload="metadata"
+            // Nada de vídeo antes do clique. Com `metadata` o Chrome puxava
+            // 68 kB do arquivo durante o carregamento, disputando banda numa
+            // seção abaixo da dobra que a maioria nunca abre. O pôster não
+            // depende disto: segue desenhando o quadro e segurando o 16/9.
+            preload="none"
             poster="/video-poster.jpg"
             playsInline
           >

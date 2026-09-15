@@ -154,22 +154,71 @@
    * na margem em qualquer largura sem nunca vazar.
    */
   /**
-   * A manchete fecha ainda mais a largura: é o eixo `wdth` do Archivo
-   * que compra o tamanho. A 86 a linha mais longa pedia 1873px e
-   * quebrava em cinco linhas; a 72 ela cabe nas quebras fixadas.
+   * Manchete da Home, em cinco linhas de caixa alta. O eixo `wdth` do
+   * Archivo fechado em 72 é o que compra o tamanho: a mesma frase a 86
+   * pede 18% mais largura e não caberia nas quebras do briefing.
    *
-   * O divisor é 10,8. (O comentário antigo dizia 15,1, de quando a
-   * manchete tinha quatro linhas; ela foi para cinco, a linha mais
-   * longa encurtou e o número nunca foi corrigido — o código sempre
-   * esteve certo, a nota é que estava velha.) Remedido na Archivo
-   * real a 'wdth' 72: a linha mais longa pede 9,72px de largura por
-   * 1px de corpo, então a 10,8 ela enche 0,90 da largura.
+   * **Dois limites, e vale o menor.** Uma manchete de cinco linhas não
+   * se resolve só pela largura: numa tela baixa ela enche a dobra
+   * sozinha e empurra a chamada e o botão para fora. Então ela é presa
+   * pela largura *e* pela altura, e manda a que for mais apertada.
+   *
+   * - **Largura:** a linha mais longa ("por falta de gente boa.") pede
+   *   **12,86px por 1px de corpo**. O número saiu de busca binária no
+   *   próprio H1 — subindo o corpo até a linha estourar — e deu igual a
+   *   1440, 1024 e 390px de janela. A 13,7 ela enche **0,94** da coluna.
+   *
+   *   **O divisor antigo era 10,8, e era impossível.** A 10,8 a linha
+   *   pediria 1,19 da coluna: ela quebrava em *toda* largura, de 320 a
+   *   1728px, e a Home lia "POR FALTA DE GENTE" / "BOA." com a palavra
+   *   órfã embaixo. O 10,8 vinha de uma medição antiga que nunca foi
+   *   refeita quando a manchete passou de quatro linhas para cinco.
+   * - **Altura:** dentro da dobra ainda precisam caber o cabeçalho, o
+   *   filete de rótulos, a chamada com o botão e os respiros entre eles
+   *   — 400px no total, medido no navegador, não estimado. O que sobra
+   *   dividido por 4,5 (cinco linhas a 0,9 de entrelinha) é o corpo que
+   *   deixa a primeira tela inteira legível sem rolar. É por este termo
+   *   que uma tela de 800px de altura recebe manchete menor que uma de
+   *   900, com a mesma largura.
+   *
+   * O teto de 132px é onde a manchete para de crescer em tela larga:
+   * acima disso ela volta a comer a dobra em telas de 900px de altura.
+   *
+   * **O piso de 32px é uma escolha, e vai contra a fórmula.** Pela
+   * largura, um celular de 390px pediria 25px — e a 25px a manchete
+   * empata com os 18px do texto corrido logo abaixo: deixa de ser
+   * manchete. A conta que manda aqui é outra: 23 caracteres em caixa
+   * alta não cabem grandes em 342px de coluna, ponto. Entre uma
+   * manchete inteira e tímida e uma manchete forte que reparte a linha
+   * mais longa em duas, a segunda é melhor — e o `balance` reparte em
+   * metades parecidas, num limite de frase, nunca largando palavra
+   * órfã. De 390px para cima a fórmula volta a mandar e nada quebra.
    */
   .d-hero {
     font-variation-settings: 'wdth' 72;
     text-transform: uppercase;
-    line-height: 0.86;
-    font-size: clamp(34px, calc((100vw - 112px) / 10.8), 168px);
+    /**
+     * 0,9 e não os 0,86 do resto do display. É a única frase de cinco
+     * linhas em caixa alta do site, e a 0,86 os acentos de "NÃO" e a
+     * cedilha de "COMEÇAR" quase encostam na linha vizinha: vira bloco
+     * fechado, não manchete. Os respiros do `.reveal-line` (0,13em em
+     * cima) continuam servindo — eles foram calibrados para a caixa
+     * mais apertada, e 0,9 pede menos que 0,86, não mais.
+     */
+    line-height: 0.9;
+    /**
+     * Se a Archivo não chegar a tempo, `font-display: optional` manda a
+     * página inteira usar a reserva, que é mais larga — e aí alguma
+     * linha transborda. Com `balance` ela se parte em duas metades
+     * parecidas em vez de largar uma palavra órfã embaixo, que era o
+     * que acontecia: a Home lia "POR FALTA DE GENTE" / "BOA.".
+     */
+    text-wrap: balance;
+    font-size: clamp(
+      32px,
+      min((100vw - var(--gutter, 56px) * 2) / 13.7, (100svh - 400px) / 4.5),
+      132px
+    );
   }
 
   /**
@@ -180,6 +229,21 @@
    * cortava o texto na margem — palavra sumindo da tela. Deixando
    * refluir, o pior caso é uma linha a mais, e nada se perde.
    */
+
+  /**
+   * Abaixo de 360px o piso de 32px vira grande demais: a manchete passa
+   * a repartir quatro linhas e encosta nas duas margens. Neste degrau o
+   * piso cai para 24px, que reparte só a linha mais longa.
+   */
+  @media (max-width: 359px) {
+    .d-hero {
+      font-size: clamp(
+        24px,
+        min((100vw - var(--gutter, 24px) * 2) / 13.7, (100svh - 400px) / 4.5),
+        132px
+      );
+    }
+  }
 
   /**
    * Título de seção: frase longa. Medido, a linha mais longa da Home
@@ -366,19 +430,246 @@
   }
 
   /* ---------------------------------------------------------------- */
-  /* Trilho horizontal das etapas                                      */
+  /* Baralho das etapas                                                */
   /* ---------------------------------------------------------------- */
 
-  .track {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    will-change: transform;
+  /**
+   * O palco: manchete e atalho de um lado, o baralho do outro.
+   *
+   * Duas colunas a partir de 1024px. Um baralho tem a largura de um
+   * cartão só, e um cartão sozinho no meio de uma faixa de 1200px
+   * deixaria vazia metade de um dos dois blocos escuros da Home — o
+   * trilho antigo enchia essa largura com três cartões de uma vez.
+   * Abaixo de 1024 é uma coluna, com o baralho embaixo do atalho.
+   */
+  .steps-stage {
+    display: grid;
+    gap: clamp(32px, 6svh, 56px);
+    padding-block: clamp(48px, 9svh, 112px);
   }
 
-  .track > li {
-    flex: 0 0 auto;
-    width: min(78vw, 460px);
+  @media (min-width: 1024px) {
+    .steps-stage {
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 440px);
+      gap: clamp(48px, 5vw, 96px);
+      align-items: center;
+    }
+  }
+
+  .steps-stage h2 {
+    margin-top: clamp(16px, 2.5svh, 32px);
+    /* O mesmo teto do display, mais um limite pela altura da janela. */
+    font-size: clamp(30px, min(5vw, 7svh), 72px);
+  }
+
+  .steps-nav {
+    margin-top: clamp(16px, 3svh, 40px);
+  }
+
+  /**
+   * **Sem JavaScript não há baralho**: os quatro cartões são uma lista,
+   * um debaixo do outro, e o método inteiro se lê de uma vez. Quem
+   * empilha é o `Motion`, marcando `data-on` no baralho — o mesmo
+   * motivo de a instrução de arrastar só existir a partir dali. Quem
+   * pede menos movimento também fica com a lista, porque o `Motion`
+   * inteiro sai na porta nesse caso.
+   */
+  .deck-cards {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .deck-card {
+    min-height: clamp(280px, 40svh, 380px);
+  }
+
+  .deck-card .step-title {
+    margin-top: clamp(20px, 4svh, 48px);
+    font-size: clamp(28px, min(3.4vw, 5.6svh), 48px);
+  }
+
+  .deck-hint {
+    display: none;
+  }
+
+  /**
+   * Ligado o baralho, **os quatro cartões passam a dividir uma célula
+   * de grade só** (`grid-area: 1 / 1`). É o que empilha sem tirar nada
+   * do fluxo: a altura da célula continua sendo a do cartão mais alto,
+   * então a pilha nunca desaba e ninguém precisa medir altura nenhuma
+   * em JavaScript para escrevê-la de volta.
+   *
+   * `touch-action: pan-y` deixa o dedo rolar a página para baixo e
+   * reserva só o eixo horizontal para o arrasto.
+   */
+  .deck[data-on] .deck-cards {
+    gap: 0;
+    touch-action: pan-y;
+  }
+
+  .deck[data-on] .deck-card {
+    grid-area: 1 / 1;
+    /**
+     * O giro e o encolhimento acontecem pelo **centro** do cartão, não
+     * pela base. Pela base o encolhimento empurra o topo para baixo
+     * quase tanto quanto o recuo o levanta, e os cartões de trás
+     * somem inteiros atrás da frente — é o que acontecia aqui.
+     */
+    transform-origin: 50% 50%;
+    /**
+     * **Opaco, e é o baralho que exige isso.** No trilho os cartões
+     * ficavam lado a lado, e o `base/6` translúcido do `.panel` bastava
+     * de superfície; empilhados, ele deixa ler o texto dos outros três
+     * por baixo — foi exatamente o que aconteceu na primeira tentativa.
+     *
+     * A saída não muda cor nenhuma: a mesma clareada entra como
+     * **imagem**, por cima de um `ink` chapado. O olho vê o mesmo tom
+     * de sempre e o cartão tapa o que está atrás.
+     */
+    background-color: rgb(var(--ink-rgb));
+    background-image: linear-gradient(
+      rgb(var(--base-rgb) / 0.06),
+      rgb(var(--base-rgb) / 0.06)
+    );
+    transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 420ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 400ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .deck[data-on] .deck-hint {
+    display: block;
+    margin-top: 16px;
+  }
+
+  /**
+   * Atalho das quatro etapas. Serve de controle e de placar: diz em qual
+   * etapa o visitante está e deixa ele pular para outra.
+   *
+   * **O inativo continua em `base/70`, que é 7,60:1 sobre o ink.** A
+   * diferença entre ativo e inativo é o numeral em mostarda e o filete
+   * embaixo, nunca um texto mais apagado — apagar texto para marcar
+   * estado é a forma mais comum de reprovar contraste, e a seção 4 do
+   * briefing chama essa regra de inquebrável.
+   */
+  .steps-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 32px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .steps-nav a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    /* 44px de alvo de toque, que é o mínimo do briefing. */
+    min-height: 44px;
+    padding-block: 8px;
+    color: rgb(var(--base-rgb) / 0.7);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .steps-nav a:hover,
+  .steps-nav a:focus-visible {
+    color: rgb(var(--base-rgb));
+  }
+
+  .steps-nav a[aria-current] {
+    color: rgb(var(--base-rgb));
+    border-bottom-color: rgb(var(--accent-rgb));
+  }
+
+  .steps-nav-num {
+    font-family: var(--font-mono), 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: rgb(var(--accent-rgb));
+  }
+
+  .steps-nav-title {
+    font-size: 18px;
+  }
+
+  @media (min-width: 768px) {
+    .steps-nav-title {
+      font-size: 24px;
+    }
+  }
+
+  /* Quanto do método já passou. */
+  .steps-progress {
+    display: block;
+    height: 2px;
+    margin-top: 16px;
+    background-color: rgb(var(--base-rgb) / 0.15);
+  }
+
+  .steps-progress > span {
+    display: block;
+    height: 100%;
+    background-color: rgb(var(--accent-rgb));
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  /**
+   * A mão só aparece quando existe o que arrastar: sem JavaScript não
+   * há baralho, e uma mãozinha que não arrasta nada é pior que cursor
+   * nenhum.
+   */
+  .deck[data-on] {
+    cursor: grab;
+  }
+
+  .deck[data-dragging] {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  /**
+   * Enquanto a mão conduz, o cartão da frente não interpola — ele *é* a
+   * mão. A transição volta no instante em que o dedo sai, e é ela que
+   * joga o cartão para fora ou o traz de volta ao lugar.
+   */
+  .deck[data-dragging] .deck-card[data-active] {
+    transition: none;
+  }
+
+  /**
+   * O cartão da etapa em que o visitante está, marcado com o mesmo
+   * tratamento do hover — não é efeito novo, é o que o site já faz
+   * quando um cartão está sob atenção. Só o fundo e a borda mudam: o
+   * texto fica igual nos quatro, sempre legível.
+   */
+  .deck-card[data-active] {
+    border-color: rgb(var(--accent-rgb) / 0.55);
+    background-color: rgb(var(--base-rgb) / 0.1);
+  }
+
+  /**
+   * O cartão da frente clareia mais — e pelo mesmo motivo do de trás,
+   * por imagem e não por fundo. O `:hover` do `.panel` entra aqui
+   * junto: só o cartão da frente recebe ponteiro, então hover e etapa
+   * atual são sempre o mesmo cartão, e sem esta linha o hover trocaria
+   * o `ink` chapado por um `base/10` translúcido — devolvendo o texto
+   * dos cartões de baixo bem na hora em que a mão chega.
+   */
+  .deck[data-on] .deck-card[data-active],
+  .deck[data-on] .deck-card:hover {
+    background-color: rgb(var(--ink-rgb));
+    background-image: linear-gradient(
+      rgb(var(--base-rgb) / 0.1),
+      rgb(var(--base-rgb) / 0.1)
+    );
   }
 
   /**
@@ -428,21 +719,29 @@
     }
   }
 
+  /**
+   * A goteira da faixa larga, como variável, porque as fórmulas de
+   * display precisam dela. Antes todas descontavam 112px fixos — a
+   * margem do desktop — e no celular sobrava largura que o cálculo não
+   * enxergava. Era isso que obrigava os pisos a serem chutados para
+   * cima, e cada tamanho tinha o seu chute.
+   */
   .shell-wide {
+    --gutter: 24px;
     width: 100%;
     margin-inline: auto;
-    padding-inline: 24px;
+    padding-inline: var(--gutter);
   }
 
   @media (min-width: 768px) {
     .shell-wide {
-      padding-inline: 40px;
+      --gutter: 40px;
     }
   }
 
   @media (min-width: 1024px) {
     .shell-wide {
-      padding-inline: 56px;
+      --gutter: 56px;
     }
   }
 
@@ -723,60 +1022,134 @@
     display: block;
   }
 
+  /**
+   * A palavra é indivisível. Cada letra dentro dela é um `inline-block`,
+   * e inline-block é ponto de quebra — sem isto o navegador parte a
+   * linha no meio de uma palavra. O único ponto de quebra que sobra é o
+   * espaço entre palavras, que é o certo.
+   */
+  .reveal-word {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
   /* Cada letra é sua própria peça, para subir com atraso entre elas. */
   .reveal-char {
     display: inline-block;
     will-change: transform;
   }
 
+
+  /* ---------------------------------------------------------------- */
+  /* CTA de agendar: o disco que inunda o botão                        */
+  /* ---------------------------------------------------------------- */
+
   /**
-   * MANTIDO SEM USO. O pin empilhado mostrava uma etapa de cada vez numa
-   * tela de 900px: sobravam 70% de vazio, e foi parte do que o Benjamin
-   * chamou de básico. As etapas viraram quatro cartões sobre o bloco
-   * escuro. Este bloco fica aqui porque o efeito 5 do briefing pede pin
-   * — se ele quiser de volta, é só religar `pinnedSteps` no Motion.
+   * O botão escuro dos dois fechos de mostarda. A seta solta virou um
+   * disco creme na ponta, e o disco é a mesma camada que inunda o botão
+   * no hover — não são dois elementos de cor igual fingindo ser um só.
+   *
+   * O disco é `inset: 0` recortado num círculo. Em repouso o raio é
+   * 16px, no hover é 150%: em `circle()` a porcentagem resolve contra
+   * `√(w² + h²) / √2` do próprio botão, e o canto mais distante do
+   * centro do disco nunca passa de 142% disso por mais largo que o botão
+   * fique. Daí não precisar medir nada em JavaScript, que é o que o
+   * componente original fazia com `ResizeObserver`.
+   *
+   * A seta anda mudando `left` de px para 50%. É layout, não composição,
+   * mas o elemento tem 20px e vive num botão de 240 — e a alternativa
+   * (translate em porcentagem) precisaria da largura do botão, que é
+   * justamente o que não se sabe sem medir.
    */
-  [data-steps][data-stacked='true'] [data-steps-pin] {
-    display: flex;
-    min-height: calc(100svh - 72px);
-    flex-direction: column;
-    justify-content: center;
-  }
+  .cta-reveal {
+    /* Diâmetro do disco em repouso e a folga até a borda do botão. */
+    --disc: 32px;
+    --disc-inset: 6px;
 
-  [data-steps][data-stacked='true'] .steps-list {
     position: relative;
-    min-height: 300px;
-    border: 0;
-    margin-top: 48px;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: 44px;
+    /* A direita abre espaço para o disco: folga + disco + o gap de 16. */
+    padding: 6px calc(var(--disc-inset) + var(--disc) + 16px) 6px 14px;
+    /**
+     * O filete não se vê em repouso — escuro sobre escuro. Ele existe
+     * para quando o creme chega: um botão creme sobre mostarda tem
+     * 2,2:1 de contorno, e a peça precisa de 3:1 para continuar sendo
+     * reconhecível como botão. Ink sobre mostarda dá 6,4:1.
+     *
+     * Os 2px saem do padding (6 e 14 no lugar de 8 e 16), senão o botão
+     * cresceria 4px e sairia de linha com o resto do fecho.
+     */
+    border: 2px solid rgb(var(--ink-rgb));
+    border-radius: 4px;
+    background-color: rgb(var(--ink-rgb));
+    color: rgb(var(--base-rgb));
+    overflow: hidden;
+    text-decoration: none;
   }
 
-  [data-steps][data-stacked='true'] .steps-list > li {
+  .cta-reveal-disc {
     position: absolute;
-    inset: 0 0 auto 0;
-    display: grid;
-    grid-template-columns: minmax(200px, 1fr) 2.6fr;
-    grid-template-rows: auto auto;
-    column-gap: 48px;
-    align-items: start;
-    border-top: 0;
-    padding: 0;
+    inset: 0;
+    z-index: 1;
+    background-color: rgb(var(--base-rgb));
+    clip-path: circle(
+      calc(var(--disc) / 2) at calc(100% - var(--disc-inset) - var(--disc) / 2)
+        50%
+    );
   }
 
-  [data-steps][data-stacked='true'] .step-numeral {
-    grid-area: 1 / 1 / 3 / 2;
-    font-size: 184px;
+  .cta-reveal-arrow {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    left: calc(100% - var(--disc-inset) - var(--disc) / 2);
+    display: flex;
+    translate: -50% -50%;
+    color: rgb(var(--ink-rgb));
   }
 
-  [data-steps][data-stacked='true'] .step-title {
-    grid-area: 1 / 2 / 2 / 3;
-    font-size: 72px;
+  @media (prefers-reduced-motion: no-preference) {
+    /**
+     * Curva e duração vêm do próprio efeito: simétrica, 460ms. A curva
+     * do resto do site (0.16, 1, 0.3, 1) dispara quase toda no primeiro
+     * terço — num disco que atravessa 240px isso lê como estouro, não
+     * como maré.
+     */
+    .cta-reveal-disc,
+    .cta-reveal-arrow,
+    .cta-reveal-label {
+      transition: clip-path 460ms cubic-bezier(0.44, 0, 0.56, 1),
+        left 460ms cubic-bezier(0.44, 0, 0.56, 1),
+        translate 460ms cubic-bezier(0.44, 0, 0.56, 1);
+    }
+
+    .cta-reveal:hover .cta-reveal-disc {
+      clip-path: circle(
+        150% at calc(100% - var(--disc-inset) - var(--disc) / 2) 50%
+      );
+    }
+
+    .cta-reveal:hover .cta-reveal-arrow {
+      left: 50%;
+    }
+
+    .cta-reveal:hover .cta-reveal-label {
+      translate: -8px 0;
+    }
   }
 
-  [data-steps][data-stacked='true'] .step-body {
-    grid-area: 2 / 2 / 3 / 3;
-    margin-top: 24px;
-    max-width: 46ch;
-    font-size: 24px;
+  /**
+   * Sem movimento não há inundação — um botão que troca de cor inteiro
+   * de um quadro para o outro é susto, não resposta. Sobra o escurecer
+   * de sempre, só que aqui ele clareia: o botão é escuro.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .cta-reveal:hover {
+      background-color: rgb(var(--ink-rgb) / 0.88);
+    }
   }
 }
 
@@ -820,6 +1193,16 @@ html.lenis body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /**
+   * A costura de pixels cobre o topo da seção e quem a tira é o GSAP —
+   * que aqui nem chega a rodar, porque o `Motion` sai na porta quando o
+   * visitante pede menos movimento. Sem esta regra ela ficaria de pé para
+   * sempre, tapando o começo de cada bloco escuro.
+   */
+  .dissolve {
+    display: none;
+  }
+
   *,
   *::before,
   *::after {

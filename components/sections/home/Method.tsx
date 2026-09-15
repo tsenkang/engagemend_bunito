@@ -1,12 +1,17 @@
-import { home, labels, steps } from '@/lib/content';
+import { PixelDissolve } from '@/components/ui/PixelDissolve';
+import { home, labels, servicos, steps } from '@/lib/content';
 
 /**
- * As quatro etapas num trilho horizontal.
+ * As quatro etapas num **baralho**: o cartão da frente sai na mão, os de
+ * trás aparecem recuados atrás dele. Dois jeitos de conduzir — arrastar
+ * o cartão ou clicar numa etapa no atalho —, e os dois mexem no mesmo
+ * índice. Não há estado paralelo para dessincronizar.
  *
- * Acima de 1024px a seção trava e o scroll vertical passa a empurrar as
- * etapas de lado: o método inteiro percorrido sem sair do quadro. Abaixo
- * disso, e sem JavaScript, o trilho é uma lista que rola no dedo — o
- * layout base, não um plano B.
+ * Sem JavaScript (e para quem pede menos movimento) o baralho não
+ * existe: os quatro cartões são uma lista, um debaixo do outro, com o
+ * método inteiro legível de uma vez. É o layout base, não um plano B —
+ * quem empilha é o `Motion`, em tempo de execução, e as âncoras do
+ * atalho continuam pulando para o cartão certo.
  */
 export function Method() {
   return (
@@ -15,37 +20,69 @@ export function Method() {
       data-steps=""
       data-dark=""
     >
-      {/*
-        O pin agarra esta div, nunca a <section>.
-        O GSAP embrulha o alvo do pin num `pin-spacer`; se o alvo fosse a
-        seção, o React perderia de vista o próprio nó na troca de rota e
-        a árvore inteira quebrava ao sair da Home.
-      */}
-      <div className="py-10 md:py-14" data-steps-pin="">
-        <div className="shell-wide">
-        <p className="label text-base/60">{labels.method}</p>
+      <PixelDissolve tone="base" />
 
-          <h2 className="display d-section mt-5 max-w-[20ch] md:mt-8">
+      <div className="steps-stage shell-wide">
+        <div className="steps-intro">
+          <p className="label text-base/60">{labels.method}</p>
+
+          <h2 className="display d-section max-w-[20ch]">
             {home.method.headline}
           </h2>
+
+          {/*
+            Atalho para as quatro etapas, e o jeito de conduzir o baralho
+            sem depender do arrasto — teclado inclusive. São âncoras de
+            verdade: sem JavaScript elas pulam para o cartão, que é o
+            comportamento certo. Com JavaScript o `Motion` intercepta e
+            traz a etapa para a frente.
+
+            Nada aqui inventa texto: numeral e título saem do `content.ts`,
+            e o rótulo do bloco é a mesma frase que `/servicos` já usa
+            ("As quatro etapas").
+          */}
+          <nav
+            className="steps-nav"
+            aria-label={servicos.stepsHeadline}
+            data-steps-nav=""
+          >
+            <ul>
+              {steps.map((step, index) => (
+                <li key={step.numeral}>
+                  <a href={`#etapa-${step.numeral}`} data-step-to={index}>
+                    <span className="steps-nav-num" data-numeric>
+                      {step.numeral}
+                    </span>
+                    <span className="steps-nav-title display display-caps">
+                      {step.title}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            {/* Quanto do método já passou. Decorativo: o estado real está
+                no `aria-current` de cada âncora. */}
+            <span className="steps-progress" aria-hidden="true">
+              <span data-steps-progress="" />
+            </span>
+          </nav>
         </div>
 
-        <div className="mt-8 md:mt-12">
-          <ol
-            className="track shell-wide overflow-x-auto pb-2 lg:overflow-visible"
-            data-track=""
-          >
+        <div className="deck" data-deck="">
+          <ol className="deck-cards">
             {steps.map((step) => (
               <li
                 key={step.numeral}
+                id={`etapa-${step.numeral}`}
                 data-step=""
-                className="panel flex min-h-[380px] flex-col rounded p-6 md:min-h-[440px] md:p-8"
+                className="panel deck-card flex flex-col rounded p-6 md:p-8"
               >
                 <span className="label text-accent" data-numeric>
                   {step.numeral}
                 </span>
 
-                <h3 className="display display-caps mt-10 text-32 md:mt-14 md:text-48">
+                <h3 className="display display-caps step-title">
                   {step.title}
                 </h3>
 
@@ -53,6 +90,15 @@ export function Method() {
               </li>
             ))}
           </ol>
+
+          {/*
+            Instrução de uso, não conteúdo — e por isso só aparece quando
+            existe o que arrastar: quem a mostra é o `data-on` que o
+            `Motion` põe no baralho. Sem JavaScript ela não está lá.
+          */}
+          <p className="label deck-hint text-base/60" aria-hidden="true">
+            Arraste os cartões
+          </p>
         </div>
       </div>
     </section>

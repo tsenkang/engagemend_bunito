@@ -1,10 +1,16 @@
-import { Arrow } from '@/components/ui/Arrow';
+import { ArrowRevealButton } from '@/components/ui/ArrowRevealButton';
+import { PixelDissolve } from '@/components/ui/PixelDissolve';
 import { labels, servicos, site } from '@/lib/content';
 
 /** Mesmo fecho da Home: o bloco de mostarda ocupando a tela inteira. */
 export function Closing() {
   return (
-    <section data-accent="" className="bg-accent py-12 text-ink md:py-20">
+    <section
+      data-accent=""
+      className="relative overflow-hidden bg-accent py-12 text-ink md:py-20"
+    >
+      <PixelDissolve tone="ink" />
+
       <div className="shell-wide">
         <p className="label text-ink" data-enter="">
           {labels.servicosClosing}
@@ -21,16 +27,9 @@ export function Closing() {
           <p className="max-w-measure text-18 md:text-20">{servicos.closing.body}</p>
 
           <div className="shrink-0">
-            <a
-              href={servicos.closing.cta.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-magnetic=""
-              className="group inline-flex min-h-touch items-center gap-2 rounded bg-ink px-4 py-2 text-18 font-semibold text-base transition-[filter] duration-200 ease-out hover:brightness-110 motion-reduce:transition-none"
-            >
+            <ArrowRevealButton href={servicos.closing.cta.href} external>
               {servicos.closing.cta.label}
-              <Arrow className="transition-transform duration-200 ease-out group-hover:translate-x-half motion-reduce:transition-none" />
-            </a>
+            </ArrowRevealButton>
 
             <p className="mt-4 text-16 text-ink">
               ou escreva para{' '}

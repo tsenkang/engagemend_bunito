@@ -1,3 +1,4 @@
+import { PixelDissolve } from '@/components/ui/PixelDissolve';
 import { labels, servicos } from '@/lib/content';
 
 /**
@@ -10,6 +11,8 @@ export function Formats() {
       className="texture texture-light on-ink bg-ink py-12 text-base md:py-20"
       data-dark=""
     >
+      <PixelDissolve tone="base" />
+
       <div className="shell-wide">
         <p className="label text-base/60">{labels.servicosFormats}</p>
 

@@ -16,9 +16,9 @@ import { prefersReducedMotion } from '@/lib/animations';
  * transparentes e deixam ela aparecer; as escuras e a mostarda pintam
  * por cima.
  *
- * Desliga sozinho quando: o visitante pede menos movimento, a aba sai de
- * foco, ou o navegador não tem WebGL2 — e aí o fundo é a cor lisa, que
- * já é o estado sem JavaScript.
+ * Desliga sozinho quando: não há cursor (celular e tablet), o visitante
+ * pede menos movimento, a aba sai de foco, ou o navegador não tem
+ * WebGL2 — e aí o fundo é a cor lisa, que já é o estado sem JavaScript.
  */
 export function ContourField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -26,6 +26,28 @@ export function ContourField() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || prefersReducedMotion()) return;
+
+    /**
+     * Só onde existe cursor. Decisão do Benjamin, 2026-09-14, e ela tem
+     * duas razões que se somam:
+     *
+     * - **Metade do efeito não existe no toque.** O relevo afunda sob o
+     *   ponteiro; num celular não há ponteiro, então o que sobra é uma
+     *   textura escoando devagar, que a `texture.svg` já dá de graça.
+     * - **Os 3 pontos.** Medido: com o campo a Home fica em 89 de
+     *   Performance no Lighthouse mobile, sem ele em 92 — e a meta do
+     *   briefing é 90. Adiar a subida do shader e cortar os quadros pela
+     *   metade foram tentados e não mudaram nada; o custo é o contexto
+     *   WebGL em si. E um shader em laço contínuo também é bateria de
+     *   quem está no celular.
+     *
+     * O `canvas` continua no documento sem nunca pintar, então o fundo é
+     * a cor lisa do `body` — o mesmo estado de quem pede menos movimento
+     * ou não tem WebGL2. Nada quebra, nada pula.
+     *
+     * Mesma consulta que o `Cursor` usa, e pelo mesmo motivo.
+     */
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
     /**
      * O campo só começa depois que a página pintou e o navegador ficou
