@@ -31,7 +31,12 @@ export function Cursor() {
       target.x = event.clientX;
       target.y = event.clientY;
 
-      const over = (event.target as Element | null)?.closest?.('a, button, video');
+      // O vídeo saiu desta lista. O ponto é 14px em `difference` e
+      // crescia para 2,6x sobre `video` — um disco de ~36px pousado em
+      // cima dos controles nativos, bem no botão de play. O cursor do
+      // sistema continua visível (nada aqui faz `cursor: none`), então
+      // não crescer sobre o vídeo não tira affordance de ninguém.
+      const over = (event.target as Element | null)?.closest?.('a, button');
       scaleTarget = over ? 2.6 : 1;
     };
 

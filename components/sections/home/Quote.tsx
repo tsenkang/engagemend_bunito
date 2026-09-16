@@ -1,4 +1,5 @@
 import { Ramp } from '@/components/ui/Ramp';
+import { WipeLines } from '@/components/ui/WipeLines';
 import { home, labels } from '@/lib/content';
 
 /**
@@ -18,11 +19,16 @@ export function Quote() {
           <Ramp count={6} className="hidden md:flex" />
         </div>
 
+        {/*
+          A citação é a única peça de display do site que não tinha
+          entrada nenhuma: o bloco escuro chegava com o `clip-path` do
+          `data-dark` e as duas linhas já estavam lá dentro. Agora cada
+          uma é varrida por uma barra creme — a mesma cor do texto, que
+          é a única que se vê sobre o verde.
+        */}
         <blockquote className="mt-5 md:mt-8">
-          <p className="display d-quote lines">
-            {home.quote.lines.map((line) => (
-              <span key={line}>{line}</span>
-            ))}
+          <p className="display d-quote lines" data-wipe="">
+            <WipeLines lines={home.quote.lines} />
           </p>
         </blockquote>
 

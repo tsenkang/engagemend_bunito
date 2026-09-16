@@ -34,14 +34,60 @@ export type SocialLink = {
   readonly external: boolean;
 };
 
+/**
+ * Assunto e corpo do primeiro contato, escritos uma vez só.
+ *
+ * As três perguntas são o que qualifica a conversa, e é por isso que
+ * elas vão junto no corpo: quem responde já sabe de qual cidade se
+ * trata antes da primeira resposta.
+ */
+const assunto = 'Quero levar a EngageMend para minha cidade';
+const corpo =
+  'Olá! Quero saber como a EngageMend pode ajudar minha cidade.\n\n' +
+  'Cidade: \nEscola ou grupo de jovens parceiro: \n' +
+  'Evento ou desafio que você tem em mente: \n';
+
+const destinatario = 'engagemend@gmail.com';
+
 export const site = {
   name: 'EngageMend',
-  email: 'engagemend@gmail.com',
-  /** Composição do Gmail já com assunto e corpo preenchidos. */
+  email: destinatario,
+  /**
+   * **O caminho primário do site inteiro, e por isso é `mailto:`.**
+   *
+   * Era o compositor do Gmail. Quem não estivesse logado numa conta
+   * Google — prefeitura em Outlook ou Zimbra, navegador corporativo,
+   * celular sem Gmail configurado — caía numa tela de login em vez de
+   * escrever, no único ponto de conversão que o site tem. O `mailto:`
+   * abre o programa de e-mail de quem tem um e abre o próprio Gmail
+   * para quem usa Gmail no navegador.
+   */
+  mailto: `mailto:${destinatario}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`,
+  /** O compositor do Gmail, agora como alternativa e não como porta. */
   compose:
-    'https://mail.google.com/mail/?view=cm&fs=1&to=engagemend%40gmail.com&su=Quero%20levar%20a%20EngageMend%20para%20minha%20cidade&body=Ol%C3%A1!%20Quero%20saber%20como%20a%20EngageMend%20pode%20ajudar%20minha%20cidade.%0A%0ACidade%3A%20%0AEscola%20ou%20grupo%20de%20jovens%20parceiro%3A%20%0AEvento%20ou%20desafio%20que%20voc%C3%AA%20tem%20em%20mente%3A%20%0A',
+    `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(destinatario)}` +
+    `&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`,
   linkedin: 'https://www.linkedin.com/company/engagemend/home/',
   instagram: 'https://www.instagram.com/engage_mend/',
+} as const;
+
+/**
+ * O fecho de agendar, escrito uma vez.
+ *
+ * `/servicos` terminava nele e `/sobre` não terminava em nada — a rota
+ * onde o cético decide se confia entregava o visitante ao rodapé, no
+ * ponto em que a vontade de agir é maior. Agora as duas rotas de dentro
+ * fecham no mesmo bloco, com as mesmas palavras, e as palavras moram
+ * aqui em vez de em dois lugares que envelhecem separados.
+ */
+export const schedule = {
+  headline: 'Pronto para começar?',
+  body: 'Conversa de 20 minutos, sem compromisso. Ouvimos o caso e dizemos com franqueza se dá para montar algo.',
+  cta: { label: 'Agendar conversa', href: site.mailto },
+  /** O que acontece depois do clique. Ninguém dizia. */
+  note: 'Abre seu e-mail com as perguntas já escritas.',
+  gmailPrefix: 'Sem programa de e-mail?',
+  gmailLabel: 'Abrir no Gmail',
 } as const;
 
 export const nav: readonly { label: string; href: string }[] = [
@@ -95,10 +141,12 @@ export const labels = {
   contact: '04 — Falar conosco',
   sobre: '01 — Quem somos',
   metrics: '02 — Pompeia, interior de São Paulo',
+  servicosIntro: 'Maratona de criação',
   servicosSteps: '01 — As quatro etapas',
   servicosPractice: '02 — Na prática',
   servicosFormats: '03 — Midiathon e hackathon',
   servicosClosing: '04 — Agendar conversa',
+  sobreSchedule: '03 — Agendar conversa',
 } as const;
 
 export const marquee: readonly string[] = [
@@ -148,6 +196,8 @@ export const home = {
     headline: 'Montamos uma maratona de criação na sua cidade.',
     closingLead: 'Não ensinamos empreendedorismo em palestra.',
     closingPunch: 'Fazemos acontecer.',
+    /** Instrução de uso, não conteúdo: só aparece quando há o que arrastar. */
+    deckHint: 'Arraste os cartões',
   },
   video: {
     src: '/EngageMend.mp4',
@@ -165,8 +215,11 @@ export const home = {
     id: 'contato',
     headline: ['Sua cidade tem um evento', 'ou um problema este ano?'],
     body: 'Conversa de 20 minutos, sem compromisso. Ouvimos o caso e dizemos com franqueza se dá para montar algo.',
-    cta: { label: 'Agendar conversa', href: site.compose },
-    fallbackPrefix: 'ou escreva para',
+    cta: { label: 'Agendar conversa', href: site.mailto },
+    /** O que acontece depois do clique. Ninguém dizia. */
+    note: 'Abre seu e-mail com as perguntas já escritas.',
+    gmailPrefix: 'Sem programa de e-mail?',
+    gmailLabel: 'Abrir no Gmail',
   },
 } as const;
 
@@ -189,6 +242,8 @@ export const sobre = {
     { value: 20, suffix: ' mil', label: 'habitantes na cidade onde começamos', kind: 'count' },
     { value: 2026, suffix: '', label: 'ano de fundação', kind: 'year' },
   ] satisfies readonly Metric[],
+  /** Título da faixa de números. Só para leitor de tela: quem o vê é o rótulo. */
+  metricsHeading: 'Pompeia, interior de São Paulo',
   quote: 'Nenhuma prova de que isso funciona vem de nós. Vem de Pompeia.',
 } as const;
 
@@ -229,11 +284,6 @@ export const servicos = {
   ] satisfies readonly Format[],
   formatsNote:
     'A escolha depende do que a cidade precisa naquele momento. O método é o mesmo nos dois.',
-  closing: {
-    headline: 'Pronto para começar?',
-    body: 'Conversa de 20 minutos, sem compromisso. Ouvimos o caso e dizemos com franqueza se dá para montar algo.',
-    cta: { label: 'Agendar conversa', href: site.compose },
-  },
 } as const;
 
 /**

@@ -51,6 +51,7 @@ export function Motion() {
 
     const context = gsap.context(() => {
       heroReveal();
+      wipeLines();
       entrances();
       darkZones();
       pixelDissolve();
@@ -123,6 +124,70 @@ function heroReveal() {
 
   // Espera a cortina do preloader sair antes de começar.
   void ready.then(() => timeline.play());
+}
+
+/**
+ * Varredura de linha: a direção do **Block Text Reveal do Originkit**.
+ *
+ * Uma barra sólida cobre a linha da esquerda para a direita, o texto
+ * troca para visível no instante em que está inteiramente coberto, e a
+ * barra sai pela direita. Linhas em cascata, 120ms entre elas.
+ *
+ * **O giro de origem no meio do caminho é o truque do efeito.** A barra
+ * entra crescendo a partir da esquerda e sai encolhendo na direção da
+ * direita — com uma origem só ela voltaria por onde veio, e o que se lê
+ * é uma sanfona, não uma passagem. A troca acontece quando `scaleX` vale
+ * exatamente 1: em escala cheia mudar a origem não desloca nada, então
+ * não há salto.
+ *
+ * **Por que não há `gsap.set` de opacidade na criação.** Esconder o
+ * texto no instante em que o efeito é montado é o que deixa um reveal
+ * preso se o JavaScript quebrar depois — risco que este projeto já
+ * aceita nos blocos escuros e que eu não quis ampliar. Aqui a linha só
+ * se esconde *dentro* da timeline, que só roda quando o gatilho dispara,
+ * e o gatilho é `top 88%`: quando ele acende, o elemento ainda está
+ * abaixo da dobra. A janela em que a linha fica escondida sem barra é de
+ * um quadro, fora da tela.
+ *
+ * `once: true` — entrada não re-anima ao subir a página, como o briefing
+ * pede. Sem `scrub`: o orçamento da Home já está estourado e este efeito
+ * não ganha nada com ele.
+ */
+function wipeLines() {
+  gsap.utils.toArray<HTMLElement>('[data-wipe]').forEach((block) => {
+    const bars = block.querySelectorAll<HTMLElement>('[data-wipe-bar]');
+    const texts = block.querySelectorAll<HTMLElement>('[data-wipe-text]');
+    if (bars.length === 0 || texts.length !== bars.length) return;
+
+    const timeline = gsap.timeline({
+      scrollTrigger: { trigger: block, start: 'top 88%', once: true },
+    });
+
+    bars.forEach((bar, index) => {
+      // Irmão da barra, nunca o pai: o pai a contém, e some com ela.
+      const line = texts[index];
+      if (!line) return;
+
+      const at = index * 0.12;
+      const cover = 0.42;
+
+      timeline
+        .set(line, { opacity: 0 }, at)
+        .fromTo(
+          bar,
+          { scaleX: 0, transformOrigin: 'left center' },
+          { scaleX: 1, duration: cover, ease: 'power3.out' },
+          at,
+        )
+        .set(line, { opacity: 1 }, at + cover)
+        .set(bar, { transformOrigin: 'right center' }, at + cover)
+        .to(
+          bar,
+          { scaleX: 0, duration: cover, ease: 'power3.in' },
+          at + cover,
+        );
+    });
+  });
 }
 
 /** Entrada genérica, uma vez só, para quem carrega `data-enter`. */
@@ -454,6 +519,38 @@ function cardDeck(): () => void {
     irPara(alvo);
   };
 
+  /**
+   * **O terceiro condutor: o scroll.**
+   *
+   * Ele tinha sumido. Arrastar e clicar no atalho são gestos que o
+   * visitante precisa descobrir; rolar não se descobre, já se está
+   * fazendo. Sem isto, quem só rolava lia a etapa 01 e ia embora sem
+   * ver o resto do método — que é a oferta inteira da Home.
+   *
+   * Sem pin: era o pin que adiantava todo gatilho abaixo dele e que
+   * espalhava a nota da Home em 6 pontos entre execuções. Aqui o
+   * gatilho só lê o progresso da seção e arredonda para uma etapa.
+   *
+   * **Os três condutores não brigam** porque o scroll só age quando
+   * cruza a fronteira de uma etapa nova. Arrastar ou clicar muda o
+   * cartão na hora e ele fica lá; o scroll retoma no próximo cruze.
+   * Não existe estado paralelo: todos chamam o mesmo `irPara`.
+   */
+  const passos = total - 1;
+  let ultimoDoScroll = 0;
+
+  const trilho = ScrollTrigger.create({
+    trigger: deck.closest('[data-steps]') ?? deck,
+    start: 'top 70%',
+    end: 'bottom 30%',
+    onUpdate: (self) => {
+      const alvo = Math.round(self.progress * passos);
+      if (alvo === ultimoDoScroll) return;
+      ultimoDoScroll = alvo;
+      irPara(alvo);
+    },
+  });
+
   nav?.addEventListener('click', onNav);
   deck.addEventListener('pointerdown', onDown);
   deck.addEventListener('pointermove', onMove);
@@ -466,6 +563,7 @@ function cardDeck(): () => void {
 
   return () => {
     nav?.removeEventListener('click', onNav);
+    trilho.kill();
     deck.removeEventListener('pointerdown', onDown);
     deck.removeEventListener('pointermove', onMove);
     deck.removeEventListener('pointerup', onUp);
@@ -587,11 +685,18 @@ function ramps() {
  * Só funciona porque a fonte é monoespaçada: cada caractere sorteado
  * ocupa a mesma largura do certo, então a linha não muda de tamanho
  * enquanto embaralha e nada ao redor se mexe.
+ *
+ * **Rótulo de dado não embaralha.** O seletor é `.label`, que também
+ * veste os `<dt>` da tabela "Na prática" e os numerais da linha do
+ * tempo — e o `GLYPHS` não tem acento, então "DURAÇÃO" embaralhava em
+ * letras que a palavra não contém. A única seção de fatos do site era
+ * a que ganhava efeito de falha. Sobra o que o efeito sempre quis: a
+ * sobrancelha de seção.
  */
 function scramble() {
   const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789—';
 
-  gsap.utils.toArray<HTMLElement>('.label').forEach((label) => {
+  gsap.utils.toArray<HTMLElement>('.label:not(dt):not(.timeline-dot)').forEach((label) => {
     // Só rótulo de texto puro. Escrever em `textContent` de um rótulo
     // que tem filhos apagaria esses filhos — o ponto de mostarda do hero
     // sumiria no primeiro embaralhamento.

@@ -19,6 +19,12 @@ type Props = {
  * O espaço entre palavras é texto de verdade, não uma letra animada: ele
  * precisa continuar sendo ponto de quebra para o navegador.
  *
+ * **E entre duas linhas também precisa haver espaço de verdade.** Sem
+ * ele o texto do DOM sai com as palavras coladas — a Home lia
+ * "talento**p**or falta de gente boa." —, e isso quebra localizar na
+ * página, copiar e colar e a tradução automática do navegador. Como
+ * `.reveal-line` é bloco, esse espaço não desenha nada na tela.
+ *
  * O conjunto é `aria-hidden` e quem carrega o texto para leitor de tela
  * é o `aria-label` do título — senão a leitura sairia letra por letra.
  *
@@ -34,27 +40,30 @@ type Props = {
 export function RevealText({ lines }: Props) {
   return (
     <span aria-hidden="true">
-      {lines.map((line) => (
-        <span key={line} className="reveal-line">
-          <span className="reveal-inner">
-            {line.split(' ').map((word, wordIndex) => (
-              <Fragment key={`${line}-${wordIndex}`}>
-                {wordIndex > 0 ? ' ' : null}
-                <span className="reveal-word">
-                  {Array.from(word).map((character, index) => (
-                    <span
-                      key={`${line}-${wordIndex}-${index}`}
-                      className="reveal-char"
-                      data-reveal-char=""
-                    >
-                      {character}
-                    </span>
-                  ))}
-                </span>
-              </Fragment>
-            ))}
+      {lines.map((line, lineIndex) => (
+        <Fragment key={line}>
+          {lineIndex > 0 ? ' ' : null}
+          <span className="reveal-line">
+            <span className="reveal-inner">
+              {line.split(' ').map((word, wordIndex) => (
+                <Fragment key={`${line}-${wordIndex}`}>
+                  {wordIndex > 0 ? ' ' : null}
+                  <span className="reveal-word">
+                    {Array.from(word).map((character, index) => (
+                      <span
+                        key={`${line}-${wordIndex}-${index}`}
+                        className="reveal-char"
+                        data-reveal-char=""
+                      >
+                        {character}
+                      </span>
+                    ))}
+                  </span>
+                </Fragment>
+              ))}
+            </span>
           </span>
-        </span>
+        </Fragment>
       ))}
     </span>
   );

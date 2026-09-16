@@ -1,5 +1,6 @@
 import { PixelDissolve } from '@/components/ui/PixelDissolve';
 import { Ramp } from '@/components/ui/Ramp';
+import { WipeLines } from '@/components/ui/WipeLines';
 import { home } from '@/lib/content';
 
 /**
@@ -19,7 +20,16 @@ export function Statement() {
           {home.method.closingLead}
         </p>
 
-        <p className="display d-giant mt-2 md:mt-4">{home.method.closingPunch}</p>
+        {/*
+          "Fazemos acontecer." é a melhor batida da página e só tinha a
+          entrada genérica do `data-enter` do contêiner. A barra aqui é
+          mostarda: a linha vive sobre o creme, e mostarda cheia é
+          preenchimento — o único papel em que essa cor passa. Ela é
+          passageira, então não gasta uma das quatro aparições fixas.
+        */}
+        <p className="display d-giant mt-2 md:mt-4" data-wipe="">
+          <WipeLines lines={[home.method.closingPunch]} accent />
+        </p>
       </div>
     </section>
   );

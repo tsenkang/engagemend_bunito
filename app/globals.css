@@ -979,10 +979,157 @@
     display: none;
   }
 
-  .preloader-count {
-    font-family: var(--font-mono), 'IBM Plex Mono', ui-monospace, monospace;
-    font-size: 20px;
-    letter-spacing: 0.14em;
+  /**
+   * A rampa sendo construída, no lugar do contador.
+   *
+   * O número de 0 a 100% que estava aqui não media carregamento nenhum
+   * — era um `gsap.to` num objeto solto, meio segundo de relógio. Um
+   * indicador de progresso que não indica progresso é pior que nenhum.
+   *
+   * No lugar entra o único motivo gráfico que esta marca inventou: a
+   * rampa do `Ramp.tsx`, pontos que crescem da esquerda para a direita
+   * com o último em mostarda. Aqui ela não aparece pronta — uma bolinha
+   * mostarda pula de ponto em ponto e **acende cada um ao pousar**. No
+   * último pulo a bolinha encolhe a zero enquanto o ponto mostarda
+   * nasce no lugar dela: ela não sai de cena, ela vira a ponta da rampa.
+   *
+   * É "crescimento medido" acontecendo, que é literalmente o que a
+   * EngageMend vende — em vez de um número inventado.
+   *
+   * **Tudo em CSS, zero JavaScript.** O preloader ficou mais leve do que
+   * era: saiu um tween do GSAP e não entrou nada no lugar. Anima só
+   * `transform` e `opacity`, como o briefing exige.
+   *
+   * Geometria, para quem for mexer: 5 pontos de 10/14/18/22/26px com
+   * 10px de intervalo dão 130px de largura e 26px de altura. A bolinha
+   * tem 12px e mora em `left:0; bottom:0`, então pousar no topo do
+   * ponto N é `translate(centroN − 6px, −tamanhoN)` — e é por isso que
+   * o Y de cada pouso é exatamente o diâmetro do ponto embaixo dele.
+   * Mudou tamanho ou intervalo, refaça os quadros.
+   */
+  .preloader-ramp {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    width: 130px;
+    height: 26px;
+  }
+
+  .preloader-dot {
+    display: block;
+    flex: none;
+    border-radius: 9999px;
+    background-color: rgb(var(--base-rgb));
+    transform: scale(0);
+    opacity: 0;
+    /* 80ms entre pousos: o mesmo intervalo dos quadros da bolinha. */
+    animation: preloader-dot-pop 180ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: calc(var(--i) * 80ms);
+  }
+
+  .preloader-dot:nth-child(1) {
+    --i: 0;
+    --o: 0.25;
+    width: 10px;
+    height: 10px;
+  }
+  .preloader-dot:nth-child(2) {
+    --i: 1;
+    --o: 0.44;
+    width: 14px;
+    height: 14px;
+  }
+  .preloader-dot:nth-child(3) {
+    --i: 2;
+    --o: 0.63;
+    width: 18px;
+    height: 18px;
+  }
+  .preloader-dot:nth-child(4) {
+    --i: 3;
+    --o: 0.81;
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Onde a rampa chega: o único ponto mostarda, como no `Ramp.tsx`. */
+  .preloader-dot:nth-child(5) {
+    --i: 4;
+    --o: 1;
+    width: 26px;
+    height: 26px;
+    background-color: rgb(var(--accent-rgb));
+  }
+
+  .preloader-ball {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    display: block;
+    height: 12px;
+    width: 12px;
+    border-radius: 9999px;
+    background-color: rgb(var(--accent-rgb));
+    animation: preloader-ball-hop 400ms linear both;
+  }
+
+  @keyframes preloader-dot-pop {
+    from {
+      transform: scale(0);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: var(--o, 1);
+    }
+  }
+
+  /**
+   * Quatro pulos, cinco pousos. Subida desacelera, descida acelera —
+   * é o que faz o arco parecer peso caindo e não um seno.
+   */
+  @keyframes preloader-ball-hop {
+    0% {
+      transform: translate(-1px, -10px) scale(1);
+      animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+    }
+    10% {
+      transform: translate(10px, -42px) scale(1);
+      animation-timing-function: cubic-bezier(0.6, 0, 0.85, 0.45);
+    }
+    20% {
+      transform: translate(21px, -14px) scale(1);
+      animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+    }
+    30% {
+      transform: translate(34px, -46px) scale(1);
+      animation-timing-function: cubic-bezier(0.6, 0, 0.85, 0.45);
+    }
+    40% {
+      transform: translate(47px, -18px) scale(1);
+      animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+    }
+    50% {
+      transform: translate(62px, -50px) scale(1);
+      animation-timing-function: cubic-bezier(0.6, 0, 0.85, 0.45);
+    }
+    60% {
+      transform: translate(77px, -22px) scale(1);
+      animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+    }
+    70% {
+      transform: translate(94px, -54px) scale(1);
+      animation-timing-function: cubic-bezier(0.6, 0, 0.85, 0.45);
+    }
+    /* Pouso no quinto ponto. Daqui ela some virando o próprio ponto. */
+    80% {
+      transform: translate(111px, -26px) scale(1);
+      animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    }
+    100% {
+      transform: translate(111px, -26px) scale(0);
+    }
   }
 
   .route-curtain {
@@ -1037,6 +1184,74 @@
   .reveal-char {
     display: inline-block;
     will-change: transform;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Varredura de linha — o "Block Text Reveal" portado               */
+  /* ---------------------------------------------------------------- */
+
+  /**
+   * Uma barra sólida cobre a linha da esquerda para a direita, o texto
+   * aparece debaixo dela, e a barra sai pela direita. É o modo "lines"
+   * do Block Text Reveal do Originkit, que o Benjamin mandou.
+   *
+   * **Portada a direção, não o arquivo** — a quarta vez neste projeto.
+   * O original é um componente de cliente com `ResizeObserver`, um laço
+   * de `requestAnimationFrame` próprio e o próprio ouvinte de `scroll`.
+   * Trazer isso significaria um segundo relógio de animação brigando
+   * com o Lenis (o briefing manda escolher uma biblioteca e ir até o
+   * fim com ela) e quebraria a regra que sustenta este site: seção é
+   * componente de servidor, gancho é atributo `data-`, quem anima é o
+   * `Motion`. Aqui a marcação não custa um byte de JavaScript.
+   *
+   * O original também mede cada palavra com `offsetLeft`/`offsetTop`
+   * para desenhar a barra do tamanho exato da linha. Não é preciso: um
+   * `inline-block` já encolhe até a largura do texto, e é o navegador
+   * quem mede — de graça, e sem forçar reflow.
+   *
+   * **A barra nasce em `scaleX(0)`, então sem JavaScript ela não
+   * existe e o texto se lê inteiro.** Nada aqui esconde texto por CSS,
+   * que é a regra do projeto.
+   */
+  .wipe-line {
+    display: block;
+  }
+
+  .wipe-inner {
+    /* Encolhe até a largura do texto: é isto que dispensa medir. */
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    --wipe: rgb(var(--ink-rgb));
+  }
+
+  /* Sobre bloco escuro a barra inverte, senão ela some no fundo. */
+  .on-ink .wipe-inner {
+    --wipe: rgb(var(--base-rgb));
+  }
+
+  /**
+   * A mostarda cheia é permitida como bloco (nunca como texto), e a
+   * barra é exatamente isso: preenchimento passageiro. Fica depois da
+   * regra de `.on-ink` de propósito — as duas têm a mesma
+   * especificidade e esta precisa ganhar quando as duas se aplicarem.
+   */
+  .wipe-inner.wipe-accent {
+    --wipe: rgb(var(--accent-rgb));
+  }
+
+  .wipe-bar {
+    position: absolute;
+    /* Folga para a barra cobrir acento em cima e perna de letra embaixo. */
+    top: -0.04em;
+    right: -0.04em;
+    bottom: -0.04em;
+    left: -0.04em;
+    z-index: 1;
+    background-color: var(--wipe);
+    transform: scaleX(0);
+    transform-origin: left center;
+    pointer-events: none;
   }
 
 

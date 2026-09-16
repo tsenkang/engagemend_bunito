@@ -1,4 +1,4 @@
-import { servicos, steps } from '@/lib/content';
+import { labels, servicos, steps } from '@/lib/content';
 
 /**
  * As mesmas quatro etapas da Home, vindas do mesmo objeto — outro
@@ -7,8 +7,12 @@ import { servicos, steps } from '@/lib/content';
  */
 export function Steps() {
   return (
-    <section className="shell py-4 md:py-8" data-timeline="">
-      <h2 className="display d-giant">{servicos.stepsHeadline}</h2>
+    <section className="shell-wide py-4 md:py-8" data-timeline="">
+      <p className="label text-ink/70" data-enter="">
+        {labels.servicosSteps}
+      </p>
+
+      <h2 className="display d-giant mt-5 md:mt-8">{servicos.stepsHeadline}</h2>
 
       <ol className="timeline mt-8 md:mt-12">
         <div className="timeline-fill" data-timeline-fill="" aria-hidden="true" />

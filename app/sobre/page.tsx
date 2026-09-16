@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Closing } from '@/components/sections/sobre/Closing';
 import { Intro } from '@/components/sections/sobre/Intro';
 import { Metrics } from '@/components/sections/sobre/Metrics';
+import { Schedule } from '@/components/sections/sobre/Schedule';
 import { openGraph } from '@/lib/seo';
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function SobrePage() {
       <Intro />
       <Metrics />
       <Closing />
+      <Schedule />
     </>
   );
 }

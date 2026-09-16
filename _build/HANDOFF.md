@@ -1,6 +1,8 @@
 # HANDOFF — Site EngageMend (pasta `site_engagemend_bunito`)
 
-Última sessão: 2026-09-14 (décima passada — a maratona de criação virou baralho).
+Última sessão: 2026-09-15 (décima primeira e décima segunda passadas — a crítica
+do Impeccable, os três P1 que saíram dela, a bolinha do preloader e a varredura
+de linha).
 **Leia este arquivo inteiro antes de tocar em qualquer coisa.**
 
 O briefing original do Benjamin está em `_build/BRIEFING.md`, verbatim,
@@ -18,16 +20,26 @@ mediana de 5 execuções na Home e de 3 nas outras):
 
 | Rota | Performance | Acessibilidade | Boas práticas | SEO |
 |---|---|---|---|---|
-| `/` | **89** (89–89) | 100 | 100 | 100 |
-| `/servicos` | 92 (92) | 100 | 100 | 100 |
-| `/sobre` | 93 (93–94) | 100 | 100 | 100 |
+| `/` | **89** (88–89) | 100 | 100 | 100 |
+| `/servicos` | 92 (92–93) | 100 | 100 | 100 |
+| `/sobre` | 92 (92–92) | 100 | 100 | 100 |
 
-Meta do briefing: Performance ≥ 90, Acessibilidade 100, SEO 100. As duas rotas
-de dentro batem; **a Home está um ponto abaixo**, e o que a tirou de lá foi peso
-de HTML pedido depois: um ponto da costura de pixels (sétima passada) e um do
-atalho das etapas (oitava). As linhas da Home e de `/servicos` são da décima
-passada; a de `/sobre` é da sexta, e aquela rota não mudou desde então. Sem scroll horizontal de 320px a 1440px nas três rotas.
-CLS 0,001 na Home e em `/servicos`, 0 em `/sobre`.
+Meta do briefing: Performance ≥ 90, Acessibilidade 100, SEO 100. **Nenhuma das
+três bate agora**, e as três linhas são da décima primeira passada. O que as
+tirou de lá foi peso pedido depois, uma camada de cada vez: um ponto da costura
+de pixels (sétima), um do atalho das etapas (oitava), um do condutor de scroll
+do baralho (décima primeira, na Home) e um do fecho de mostarda novo (décima
+primeira, em `/sobre`). Acessibilidade, Boas práticas e SEO seguem em 100 nas
+três. Sem scroll horizontal de 320px a 1440px. CLS 0,001 na Home.
+
+A Home recuperou um ponto na décima segunda passada (o contador do preloader
+saiu e a rampa animada que entrou é CSS puro: um tween do GSAP a menos, TBT de
+~150ms para ~113ms).
+
+**A conta que sobra, escrita sem enfeite:** a Home está 1 ponto abaixo da meta
+e a camada de movimento inteira vale 6. Não existe ajuste de bytes que devolva
+esses 2 pontos — devolver exige tirar movimento, e cada pedaço de movimento foi
+pedido. É decisão dele, não de engenharia.
 
 > **A dispersão da Home era de 6 pontos** entre execuções na mesma máquina e no
 > mesmo build — numa sessão a primeira medição deu 82 e a quarta, 93. **Era o
@@ -38,6 +50,186 @@ CLS 0,001 na Home e em `/servicos`, 0 em `/sobre`.
 A tabela anterior dizia 91 / 94 / 93, era da terceira passada e de uma execução
 por rota. Antes do corte desta passada, a remedição dava **89 / 91 / 92** — a
 Home abaixo da meta. O que mudou está na seção seguinte.
+
+---
+
+## A décima segunda passada: a bolinha do preloader e a varredura de linha
+
+Feita por uma sessão paralela, a pedido dele, enquanto a crítica corria. **Dois
+arquivos, nenhum novo:** `app/globals.css` (+155) e `components/motion/Preloader.tsx`.
+
+A tela de carregamento tinha a logo e um número de 0 a 100% que **não media
+nada** — era `gsap.to(counter, {value: 100, duration: 0.5})`, e a crítica desta
+mesma rodada tinha marcado isso como o motivo de a heurística 1 ficar em 2. O
+número saiu. No lugar entra a **rampa da marca sendo construída**: cinco pontos
+que crescem da esquerda para a direita e uma bolinha mostarda que pula de ponto
+em ponto, acendendo cada um ao pousar. No último pulo ela encolhe a zero
+enquanto o quinto ponto — o mostarda — nasce no lugar dela: a bolinha não sai de
+cena, **vira a ponta da rampa**.
+
+A escolha tem motivo, não é enfeite: `ui/Ramp.tsx` é o único motivo gráfico que
+esta marca inventou, e ele significa "crescimento medido, o último ponto é onde
+a rampa chega". O preloader passou a mostrar esse crescimento acontecendo.
+
+**Tudo é CSS.** Keyframes `preloader-dot-pop` (180ms) e `preloader-ball-hop`
+(400ms); saiu um tween do GSAP e nada entrou no lugar. Anima só `transform` e
+`opacity`. Três cores, nenhuma nova. A aritmética fecha no teto de 1,2s do
+briefing: cinco pousos de 80ms (320ms) + 180ms do último ponto = 500ms, que é
+exatamente o `(PRELOADER_MAX_MS − 700) / 1000` de onde a cortina parte, mais os
+700ms dela.
+
+**Medido depois, o que a sessão que escreveu não chegou a fazer:** Home de 88
+para **89** (mediana de 5: 88/88/89/89/89), TBT de ~150ms para ~113ms.
+Acessibilidade, Boas práticas e SEO seguem 100. **É a primeira mudança desta
+rodada que devolve ponto em vez de custar.**
+
+**Ninguém viu rodar.** Não havia navegador em nenhuma das sessões: a lógica, a
+geometria dos cinco pousos e a entrega no HTML estão conferidas, mas o
+julgamento estético da animação em movimento depende de alguém abrir. E ela só
+aparece **na primeira visita da sessão** (`sessionStorage` `engagemend:visited`)
+— para rever, aba anônima ou limpar o `sessionStorage`.
+
+### E a varredura de linha (Block Text Reveal)
+
+Mesma sessão paralela, mesmo dia. Ele mandou o **Block Text Reveal do Originkit**
+e pediu em "alguns textos específicos". **Portada a direção pela quarta vez neste
+projeto**, não o arquivo: o original é componente de cliente com
+`ResizeObserver`, laço de `requestAnimationFrame` próprio e ouvinte de `scroll`
+próprio — seria um segundo relógio brigando com o Lenis, e o briefing manda
+escolher uma biblioteca e ir até o fim com ela. Aqui é componente de servidor com
+`data-wipe`, e quem anima é o `Motion`.
+
+**Novo `components/ui/WipeLines.tsx`**, mais `.wipe-*` no `globals.css`, a função
+`wipeLines()` no `Motion.tsx` e a marcação em `home/Quote.tsx` e
+`home/Statement.tsx`.
+
+Entrou nos **dois textos de display que não tinham entrada nenhuma** — a citação
+(barra creme, a única cor visível sobre o verde) e "FAZEMOS ACONTECER." (barra
+mostarda, que é preenchimento e por isso passa; é passageira, então não gasta uma
+das quatro aparições fixas por tela). Os textos que já tinham efeito próprio
+(`RevealText` no H1, `FillText` no parágrafo do problema) foram deixados em paz.
+
+Três decisões que valem lembrar: **o giro de origem no meio do caminho** é o
+truque do efeito (a barra cresce pela esquerda e sai pela direita; com uma origem
+só ela leria como sanfona), e a troca acontece com `scaleX` exatamente em 1, onde
+mudar a origem não desloca nada. **Não há `gsap.set` de opacidade na criação**,
+de propósito: esconder texto no instante da montagem é o que deixa um reveal
+preso se o JS quebrar depois. E **o texto é uma string por linha**, sem divisão em
+palavras ou letras — por isso não precisa de `aria-label`, a seleção funciona e
+não há o risco de partir palavra no meio que o `RevealText` já teve.
+
+Um defeito que a própria sessão pegou e corrigiu no caminho: o alvo do
+`opacity: 0` era `bar.parentElement`, que **contém** a barra — apagá-lo apagaria a
+barra junto e não sobraria nada para cobrir a linha. O texto ganhou elemento
+próprio (`data-wipe-text`) e o alvo passou a ser o irmão.
+
+**Medido depois:** Home **89 cravado nas cinco execuções**, TBT de ~113ms para
+~90ms, CLS 0,001, bundle idêntico (87,4 kB). **Não custou ponto** — é o que se
+espera de componente de servidor. Conferido no CSS servido que a barra nasce em
+`transform: scaleX(0)`, então sem JavaScript nada fica coberto, e no HTML que as
+três linhas são texto de verdade e legível.
+
+**Também não foi visto rodar** — mesma ressalva do preloader.
+
+---
+
+## A décima primeira passada: a crítica e os três P1
+
+Rodou-se o `critique` do Impeccable sobre o site: duas avaliações isoladas, uma
+de direção de design e uma determinística. Saúde de design **23/36 (64%)**, com
+a heurística 10 fora por não se aplicar a um site institucional de três rotas.
+
+**Duas coisas que a crítica alegou e que NÃO eram verdade — não repetir a
+investigação.** As duas avaliações relataram a árvore de fontes quebrada
+(`lib/` movida para `public/lib/`, 39 imports sem resolver, 58 erros de `tsc`).
+Era artefato da própria sessão, não defeito do projeto: a pasta voltou, os seis
+arquivos eram byte a byte os mesmos e o `tsc` saiu limpo. E dos 40 achados do
+detector em modo-URL, **zero são defeito real**: 12 são falso positivo medido
+(contraste lido nos cartões recuados do baralho, uma string que só existe em
+`<meta description>`, a paleta creme que é token de marca, a faixa rolante já
+contida por `prefers-reduced-motion`), 19 são a direção editorial aprovada
+(caixa alta no display, sobrancelhas numeradas, entrelinha 0,9 em corpo de
+85–112px, h1 em 52vh) e os 9 de `heading-rhythm` são falso positivo de leitura:
+a separação acima dos `h3` da linha do tempo não vem da margem do título, vem
+do `pb-8 md:pb-12` do item anterior — 32–48px acima contra 8–12px abaixo, que é
+o ritmo certo. **O detector não encontrou nada neste site.**
+
+### 1. O scroll voltou a conduzir o baralho
+
+`cardDeck()` não tinha `ScrollTrigger` nenhum: rolar não avançava mais nada, e
+quem só rolava lia a etapa 01 e ia embora sem ver o resto do método — que é a
+oferta inteira da Home. Agora são três condutores do mesmo `index`.
+
+**Como eles não brigam:** o scroll só age quando cruza a fronteira de uma etapa
+nova (`Math.round(progress * 3)`, comparado com o último alvo que ele mesmo
+produziu). Arrastar ou clicar no atalho muda o cartão na hora e ele fica lá; o
+scroll retoma no próximo cruze. Não existe estado paralelo — todos chamam
+`irPara`. **Sem pin**, porque era o pin que adiantava todo gatilho abaixo dele e
+espalhava a nota da Home em 6 pontos.
+
+Custou 1 ponto na Home (89 → 88) e o TBT subiu de ~120ms para ~150ms.
+
+### 2. `/sobre` ganhou fecho — e o fecho virou um componente só
+
+A rota não tinha nenhuma instância do CTA primário: a pílula do header é
+`hidden md:block` e some abaixo de 768px, então no celular ela terminava no
+rodapé, no ponto em que a vontade de agir é maior. Ela subia até "Vem de
+Pompeia." e entregava o visitante.
+
+O bloco de mostarda de `/servicos` era markup solto; virou
+`components/ui/ScheduleBlock.tsx`, e as duas rotas de dentro passam só o rótulo
+numerado da seção. A copy saiu de `servicos.closing` para um `schedule` de
+primeiro nível no `content.ts` — **as mesmas palavras, um lugar só**, para as
+duas não envelhecerem separadas. `/sobre` custou 1 ponto por isso (93 → 92), o
+que é o preço de uma seção inteira nova.
+
+A faixa de números também ganhou um `h2` — `sr-only`, porque quem se vê ali é o
+rótulo numerado. A rota tinha três `<section>` e um heading só.
+
+### 3. A ação primária deixou de exigir conta Google
+
+Os três CTAs apontavam para `mail.google.com`. Quem não estivesse logado numa
+conta Google — prefeitura em Outlook ou Zimbra, navegador corporativo, celular
+sem Gmail — caía numa tela de login em vez de escrever, **no único ponto de
+conversão do site**.
+
+Agora o assunto e o corpo (as três perguntas que qualificam o contato) são
+escritos uma vez em `content.ts` e alimentam as duas URLs. O `mailto:` é o
+primário; o compositor do Gmail virou o link secundário, para quem não tem
+programa de e-mail configurado. **A URL do Gmail gerada é byte a byte a mesma
+que estava cravada antes** — conferido, não suposto. E o botão passou a dizer o
+que acontece depois do clique, que ninguém dizia.
+
+**Isto contraria a seção 9 do briefing**, que fixa a URL de composição. O
+briefing não previu quem não usa Google, e o custo de errar aqui é o site
+inteiro. Decisão do Benjamin, tomada nesta sessão.
+
+### Os menores que saíram junto
+
+- **O texto dos quatro h1 saía com as palavras coladas no DOM** ("talento**p**or
+  falta de gente boa"): faltava espaço entre as `.reveal-line`. Quebrava
+  localizar-na-página, copiar e colar e a tradução do navegador nas quatro
+  rotas. O `aria-label` sempre esteve certo, então nada disso aparecia em
+  auditoria.
+- **`Steps.tsx` era a única seção do site em `.shell`** e não `.shell-wide` —
+  ~112px de desalinho da margem esquerda a 1440px. E pior que o desalinho: o
+  `.d-giant` dimensiona por `(100vw − 112px)`, que pressupõe faixa larga, então
+  a manchete estava calculada para 1328px dentro de um contêiner de 1104px.
+- **A numeração de `/servicos` mentia**: "01 — As quatro etapas" era a
+  sobrancelha da *introdução* e a seção das quatro etapas não tinha nenhuma. A
+  introdução agora leva um rótulo sem número, como o hero da Home, e o 01 foi
+  para onde pertence.
+- **O `scramble()` pegava rótulo de dado.** O seletor `.label` vestia os `<dt>`
+  de "Na prática" e os numerais da linha do tempo, e o `GLYPHS` não tem acento:
+  "DURAÇÃO" embaralhava em letras que a palavra não contém. A única seção de
+  fatos do site era a que ganhava efeito de falha. Agora
+  `.label:not(dt):not(.timeline-dot)`.
+- **O cursor crescia 2,6× sobre `video`** — um disco de ~36px em
+  `mix-blend-mode: difference` pousado nos controles nativos, em cima do play.
+  O vídeo saiu da lista; o cursor do sistema continua visível de qualquer jeito.
+- `<video>` ganhou `width`/`height` reais (1920×1080, lidos do arquivo).
+- "ou escreva para" e "Arraste os cartões" estavam cravados no JSX; foram para
+  o `content.ts`, que era a regra do briefing.
 
 ---
 
@@ -562,7 +754,7 @@ medido no navegador com a fonte real:
 |---|---|---|---|
 | `.d-hero` | 72 | `(100vw − 112px) / 10,8` | "por falta de gente boa." |
 | `.d-giant` | 72 | `(100vw − 112px) / 11,9` | "Sua cidade tem um evento" |
-| `.d-quote` | 72 | `(100vw − 112px) / 25,6` | "Segura fazendo o jovem criar algo antes de ir embora." |
+| `.d-quote` | 72 | `(100vw − 112px) / 22,5` | "Segura fazendo o jovem criar algo antes de ir embora." |
 | `.d-section` | 86 | `clamp(30px, 5vw, 72px)` | "precisam sair de suas cidades pequenas" |
 | `.d-notfound` | 72 | `(100vw − 112px) / 5,6` | "Esta página" (manchete da 404) |
 
@@ -585,23 +777,45 @@ em que escrevi esta seção.
 
 ## Pendências com ele
 
-1. ~~**A Home abaixo de 90.**~~ **Resolvida** (sexta passada): o campo de curvas
-   saiu do celular e a Home voltou para 90, com piso em 90. Ver a seção da sexta
-   passada.
+1. **A Home abaixo de 90, de novo — e agora em 88.** Foi resolvida na sexta
+   passada (o campo de curvas saiu do celular) e voltou a cair com o peso que
+   ele pediu depois. Ver a conta no fim da seção "Onde está": devolver os dois
+   pontos exige tirar movimento, e cada pedaço de movimento foi pedido. É
+   decisão dele.
 2. **Não existe foto.** Enquanto não existir, o site continua sendo tipografia
    sobre cor. É a última coisa que separa este site de um site excelente — e
    nenhuma tipografia resolve sozinha. Uma sessão de fotos numa maratona real
    muda mais do que qualquer ajuste de código.
-3. **Domínio de produção.** `NEXT_PUBLIC_SITE_URL` continua caindo em
-   `localhost`; sem ele as URLs de Open Graph e o `sitemap.xml` saem errados no
-   Netlify. Uma variável de ambiente.
+3. **Domínio de produção — e é maior do que parecia.** `NEXT_PUBLIC_SITE_URL`
+   continua caindo em `localhost`, e o `localhost:3000` aparece duas vezes por
+   rota, **só no JSON-LD**. Mas a medição da décima primeira passada achou o que
+   faltava de verdade: **`canonical`, `og:url`, `og:image` e `twitter:image`
+   não existem em nenhuma das quatro rotas.** O caminho real deste site até uma
+   secretaria é alguém colando o link num WhatsApp — e sem `og:image` o que
+   aparece é um retângulo cinza. A variável resolve o `localhost`; **ela não cria
+   a imagem**. A imagem não depende de foto: a manchete em Archivo sobre o bloco
+   de mostarda já é a imagem.
+
+   Ficou de fora da décima primeira passada por escolha dele (o escopo foi "só
+   os três P1"). É a primeira coisa da fila.
 4. **Favicon.** Gerado por recorte da rampa de pontos do arquivo original
    (pixels originais, x 840–1178, sem redesenho) sobre um quadrado `ink`.
    Confirmar com ele, e trocar se a EngageMend já tiver um ícone.
 5. ~~**Página 404.**~~ **Feita** (quinta passada). Continua sendo o único texto
    do site que não veio do briefing, e continua isolado em `notFound` no
    `lib/content.ts` — se ele quiser reescrever, é lá e em lugar nenhum mais.
-6. **Rótulos de seção.** `01 — Cidades de até 50 mil habitantes` e companhia
+6. **Prova nomeável.** `/sobre` afirma "Nenhuma prova de que isso funciona vem
+   de nós. Vem de Pompeia." e o site nunca mostra Pompeia: nenhuma cidade
+   atendida, nenhuma escola parceira nomeada, nenhum número de jovens
+   alcançados. Isso é diferente da pendência 2: **não precisa de câmera**,
+   precisa de três fatos que ele tem. É o que mais move a rota do cético.
+
+7. **Os dois P2 que ficaram na fila** (escopo dele nesta passada foi só os P1):
+   os dois CTAs de mostarda na primeira dobra da Home, com rótulos e destinos
+   diferentes — "Agendar conversa" (e-mail) e "Falar conosco" (que não fala com
+   ninguém, só rola até o fim) —, e o pacote de compartilhamento da pendência 3.
+
+8. **Rótulos de seção.** `01 — Cidades de até 50 mil habitantes` e companhia
    saem de `labels` no `content.ts`. São expressões que já existem no texto ou
    nas keywords dele; a única invenção é "role para descer", que é instrução de
    uso.
@@ -659,12 +873,16 @@ components/
   motion/Preloader.tsx RouteCurtain.tsx
   ui/Button.tsx Arrow.tsx Marquee.tsx RevealText.tsx FillText.tsx
   ui/ArrowRevealButton.tsx  o CTA de agendar: disco + inundação    [9ª passada]
+  ui/ScheduleBlock.tsx      o fecho de mostarda de /servicos e /sobre [11ª]
+  ui/WipeLines.tsx          a varredura de linha (citação e statement) [12ª]
   ui/PixelDissolve.tsx      a costura de pixels entre seções       [7ª passada]
   ui/Ramp.tsx               a rampa de pontos, motivo gráfico       [4ª passada]
   ui/Counter.tsx ScrollProgress.tsx
   sections/home|sobre|servicos/...
 lib/
-  content.ts   TODO o texto, mais `labels` e `marquee`
+  content.ts   TODO o texto, mais `labels`, `marquee` e `schedule`
+               (o assunto e o corpo do e-mail moram aqui e alimentam
+                as duas URLs: `site.mailto` e `site.compose`)
   animations.ts seo.ts lenis.ts ready.ts useIsomorphicLayoutEffect.ts
 public/
   logo.png  EngageMend.mp4  video-poster.jpg  texture.svg  texture-light.svg
@@ -681,7 +899,9 @@ soletra palavra.
 
 ### Orçamento de `scrub` (limite do briefing: 2 por rota)
 
-- `/` → preenchimento do parágrafo + pin das etapas
+- `/` → preenchimento do parágrafo + o condutor de scroll do baralho (que não
+  é `scrub` e não fixa nada: só lê o progresso da seção e arredonda para uma
+  etapa)
 - `/servicos` → trilho da linha do tempo
 - `/sobre` → nenhum
 
@@ -695,10 +915,11 @@ A régua da esquerda lê o scroll num rAF próprio, sem criar ScrollTrigger.
   GSAP e só abrem quando o ScrollTrigger dispara. Se o JavaScript quebrar depois
   de o GSAP montar, essas seções ficam escondidas.
 - **A Home está em 89, um ponto abaixo da meta.** Três famílias de fonte
-  levaram-na de 97 para ~91, o WebGL para 89 (resolvido tirando-o do celular) e
-  a costura de pixels de volta para 89. Não existe margem nenhuma: qualquer peso
-  novo na Home sai do vermelho direto. Remeça sempre com mediana de 5 antes de
-  dizer que passou.
+  levaram-na de 97 para ~91, o WebGL para 89 (resolvido tirando-o do celular), a
+  costura de pixels de volta para 89 e o condutor de scroll do baralho para 88 —
+  e a saída do contador do preloader devolveu um, de volta para 89.
+  Não existe margem nenhuma: qualquer peso novo na Home sai do vermelho direto.
+  Remeça sempre com mediana de 5 antes de dizer que passou.
 - **Qualquer gatilho de scroll novo na Home abaixo da seção do método nasce
   torto** se o pin não for remedido antes dele. Ver a sétima passada: é o que o
   `refreshPriority: 1` no pin conserta, e ele precisa continuar lá.

@@ -63,8 +63,6 @@ export function Header() {
             <li className="hidden md:block">
               <a
                 href={home.contact.cta.href}
-                target="_blank"
-                rel="noopener noreferrer"
                 data-magnetic=""
                 className="inline-flex min-h-touch items-center rounded-full bg-accent px-3 text-14 font-semibold text-ink transition-[filter] duration-200 ease-out hover:brightness-94 md:px-4 md:text-16"
               >

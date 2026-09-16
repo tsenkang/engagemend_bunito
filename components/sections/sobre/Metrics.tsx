@@ -11,6 +11,13 @@ export function Metrics() {
       <div className="shell-wide">
         <p className="label text-ink/70">{labels.metrics}</p>
 
+        {/*
+          A faixa tinha três números e nenhum título: quem navega por
+          cabeçalhos ouvia a rota inteira como um h1 só. O rótulo
+          numerado acima é quem se vê; este é quem se ouve.
+        */}
+        <h2 className="sr-only">{sobre.metricsHeading}</h2>
+
         <dl className="mt-8 grid gap-8 md:mt-12 md:grid-cols-3 md:gap-0">
           {sobre.metrics.map((metric, index) => (
             <div

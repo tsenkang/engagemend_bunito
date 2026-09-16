@@ -22,7 +22,6 @@ import { useIsomorphicLayoutEffect } from '@/lib/useIsomorphicLayoutEffect';
  */
 export function Preloader() {
   const root = useRef<HTMLDivElement>(null);
-  const number = useRef<HTMLSpanElement>(null);
   const [done, setDone] = useState(false);
 
   useIsomorphicLayoutEffect(() => {
@@ -48,7 +47,6 @@ export function Preloader() {
       return;
     }
 
-    const counter = { value: 0 };
     const start = performance.now();
 
     const timeline = gsap.timeline({
@@ -58,20 +56,27 @@ export function Preloader() {
       },
     });
 
-    timeline
-      .to(counter, {
-        value: 100,
-        duration: (PRELOADER_MAX_MS - 700) / 1000,
-        ease: 'power2.inOut',
-        onUpdate: () => {
-          if (number.current) number.current.textContent = Math.round(counter.value) + '%';
-        },
-      })
-      .to(element, {
+    /**
+     * A cortina só entra depois que a rampa terminou de se montar.
+     *
+     * Os 500ms de espera não são chute: a bolinha pousa de 80 em 80ms
+     * (são cinco pousos, 320ms) e o último ponto leva 180ms para nascer
+     * — 500ms cravados. Somados aos 700ms da cortina dão o teto de 1,2s
+     * que o briefing impõe ao preloader.
+     *
+     * **A rampa é CSS puro.** O GSAP aqui só espera e puxa a cortina; o
+     * tween do contador que existia neste lugar saiu e nada entrou no
+     * lugar dele, então este componente ficou mais leve do que era.
+     */
+    timeline.to(
+      element,
+      {
         clipPath: 'inset(0% 0% 100% 0%)',
         duration: DURATION.curtain + 0.3,
         ease: EASE.curtain,
-      });
+      },
+      (PRELOADER_MAX_MS - 700) / 1000,
+    );
 
     return () => {
       timeline.kill();
@@ -91,8 +96,26 @@ export function Preloader() {
       // nem do buscador: o HTML abaixo dela está inteiro no documento.
     >
       <Logo height={72} className="h-7 w-auto md:h-9" />
-      <span ref={number} className="preloader-count font-display" data-numeric>
-        0%
+
+      {/*
+        A rampa da marca sendo construída: a bolinha mostarda pula de
+        ponto em ponto e acende cada um ao pousar. No último pulo ela
+        encolhe a zero enquanto o ponto mostarda nasce no lugar dela —
+        a bolinha não sai de cena, ela vira a ponta da rampa.
+
+        Cinco pontos fixos, e é de propósito: os tamanhos, os intervalos
+        e os quadros do pulo são a mesma medida. Trocar a quantidade
+        aqui pede refazer `preloader-ball-hop` no `globals.css`.
+
+        Toda a animação é CSS. Não há estado, não há ref, não há tween.
+      */}
+      <span className="preloader-ramp">
+        <span className="preloader-dot" />
+        <span className="preloader-dot" />
+        <span className="preloader-dot" />
+        <span className="preloader-dot" />
+        <span className="preloader-dot" />
+        <span className="preloader-ball" />
       </span>
     </div>
   );

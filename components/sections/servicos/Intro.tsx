@@ -7,7 +7,7 @@ export function Intro() {
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-ink/16 pb-4">
         <p className="label flex items-center gap-2 text-ink/70">
           <span className="marquee-dot" aria-hidden="true" />
-          {labels.servicosSteps}
+          {labels.servicosIntro}
         </p>
         <p className="label text-ink/70" aria-hidden="true">
           {labels.scroll} ↓

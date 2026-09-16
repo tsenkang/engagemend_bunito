@@ -26,6 +26,11 @@ export function Video() {
             preload="none"
             poster="/video-poster.jpg"
             playsInline
+            // Dimensões reais do arquivo (1920x1080). O `aspect-video` já
+            // segurava a altura; declarar a razão intrínseca cobre o
+            // instante antes de o CSS aplicar.
+            width={1920}
+            height={1080}
           >
             <source src={home.video.src} type="video/mp4" />
           </video>

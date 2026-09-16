@@ -97,7 +97,7 @@ export function Method() {
             `Motion` põe no baralho. Sem JavaScript ela não está lá.
           */}
           <p className="label deck-hint text-base/60" aria-hidden="true">
-            Arraste os cartões
+            {home.method.deckHint}
           </p>
         </div>
       </div>
