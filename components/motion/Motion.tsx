@@ -55,7 +55,6 @@ export function Motion() {
       entrances();
       darkZones();
       pixelDissolve();
-      videoReveal();
       fillOnScroll();
       timelineTrack();
       counters();
@@ -292,25 +291,6 @@ function pixelDissolve() {
       },
     });
   });
-}
-
-/** 10. O vídeo abre de faixa fina para retângulo. */
-function videoReveal() {
-  const frame = document.querySelector<HTMLElement>('[data-video-frame]');
-  if (!frame) return;
-
-  gsap.fromTo(
-    frame,
-    { clipPath: 'inset(42% 0% 42% 0%)', scale: 1.06 },
-    {
-      clipPath: 'inset(0% 0% 0% 0%)',
-      scale: 1,
-      duration: 0.9,
-      ease: EASE.enter,
-      scrollTrigger: { trigger: frame, start: 'top 85%', once: true },
-      onComplete: () => gsap.set(frame, { clearProps: 'clipPath,transform' }),
-    },
-  );
 }
 
 /**

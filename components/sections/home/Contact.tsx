@@ -1,6 +1,7 @@
 import { ArrowRevealButton } from '@/components/ui/ArrowRevealButton';
+import { ContactFallback } from '@/components/ui/ContactFallback';
 import { PixelDissolve } from '@/components/ui/PixelDissolve';
-import { home, labels, site } from '@/lib/content';
+import { home, labels } from '@/lib/content';
 
 /**
  * O bloco de mostarda: a única vez em que a cor de destaque ocupa a tela
@@ -39,22 +40,7 @@ export function Contact() {
               {home.contact.cta.label}
             </ArrowRevealButton>
 
-            {/*
-              Duas informações que faltavam no momento de maior risco: o
-              que acontece depois do clique, e a saída para quem não tem
-              programa de e-mail configurado.
-            */}
-            <p className="mt-4 max-w-measure text-16 text-ink">
-              {home.contact.note} {home.contact.gmailPrefix}{' '}
-              <a
-                href={site.compose}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-touch items-center font-medium text-ink underline decoration-ink/50 transition-colors duration-200 ease-out hover:decoration-ink motion-reduce:transition-none"
-              >
-                {home.contact.gmailLabel}
-              </a>
-            </p>
+            <ContactFallback />
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { ArrowRevealButton } from '@/components/ui/ArrowRevealButton';
+import { ContactFallback } from '@/components/ui/ContactFallback';
 import { PixelDissolve } from '@/components/ui/PixelDissolve';
-import { schedule, site } from '@/lib/content';
+import { schedule } from '@/lib/content';
 
 type Props = {
   /** O rótulo numerado da seção: cada rota tem a sua posição na espinha. */
@@ -46,22 +47,7 @@ export function ScheduleBlock({ label }: Props) {
               {schedule.cta.label}
             </ArrowRevealButton>
 
-            {/*
-              Duas informações que faltavam no momento de maior risco: o
-              que acontece depois do clique, e a saída para quem não tem
-              programa de e-mail configurado.
-            */}
-            <p className="mt-4 max-w-measure text-16 text-ink">
-              {schedule.note} {schedule.gmailPrefix}{' '}
-              <a
-                href={site.compose}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-touch items-center font-medium text-ink underline decoration-ink/50 transition-colors duration-200 ease-out hover:decoration-ink motion-reduce:transition-none"
-              >
-                {schedule.gmailLabel}
-              </a>
-            </p>
+            <ContactFallback />
           </div>
         </div>
       </div>

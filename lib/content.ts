@@ -84,9 +84,28 @@ export const schedule = {
   headline: 'Pronto para começar?',
   body: 'Conversa de 20 minutos, sem compromisso. Ouvimos o caso e dizemos com franqueza se dá para montar algo.',
   cta: { label: 'Agendar conversa', href: site.mailto },
+} as const;
+
+/**
+ * O que fica embaixo do botão, nos três fechos e numa fonte só.
+ *
+ * O botão é um `mailto:`, e um `mailto:` não abre nada em máquina sem
+ * programa de e-mail configurado. **Isso deixou de ser caso raro:** a
+ * Microsoft aposentou o Correio do Windows, e máquina nova chega sem
+ * handler nenhum para o protocolo — o clique não falha, ele não tem para
+ * onde ir, e nada avisa o visitante. Aconteceu na máquina do Benjamin,
+ * com o handler apontando para um ProgId que não existe mais.
+ *
+ * O público deste site é secretaria de prefeitura e escola, quase toda
+ * em webmail. Por isso o endereço aparece **em texto, não como link:**
+ * texto não depende de cliente de e-mail, nem de conta Google, nem de
+ * clique. É o chão que funciona sempre. O botão e o Gmail são atalhos
+ * por cima dele, e um atalho pode falhar sem levar a conversão junto.
+ */
+export const contactSupport = {
   /** O que acontece depois do clique. Ninguém dizia. */
   note: 'Abre seu e-mail com as perguntas já escritas.',
-  gmailPrefix: 'Sem programa de e-mail?',
+  fallbackPrefix: 'Ou escreva direto para',
   gmailLabel: 'Abrir no Gmail',
 } as const;
 
@@ -199,11 +218,6 @@ export const home = {
     /** Instrução de uso, não conteúdo: só aparece quando há o que arrastar. */
     deckHint: 'Arraste os cartões',
   },
-  video: {
-    src: '/EngageMend.mp4',
-    /** Rótulo acessível do player, lido por leitor de tela. */
-    caption: 'Vídeo de apresentação da EngageMend',
-  },
   quote: {
     lines: [
       'Uma cidade não segura talento com discurso.',
@@ -216,10 +230,6 @@ export const home = {
     headline: ['Sua cidade tem um evento', 'ou um problema este ano?'],
     body: 'Conversa de 20 minutos, sem compromisso. Ouvimos o caso e dizemos com franqueza se dá para montar algo.',
     cta: { label: 'Agendar conversa', href: site.mailto },
-    /** O que acontece depois do clique. Ninguém dizia. */
-    note: 'Abre seu e-mail com as perguntas já escritas.',
-    gmailPrefix: 'Sem programa de e-mail?',
-    gmailLabel: 'Abrir no Gmail',
   },
 } as const;
 
@@ -343,7 +353,15 @@ export const footer = {
   links: [
     { label: 'LinkedIn', href: site.linkedin, external: true },
     { label: 'Instagram', href: site.instagram, external: true },
-    { label: 'E-mail', href: 'mailto:engagemend@gmail.com', external: true },
+    /*
+      O rótulo é o próprio endereço, e não a palavra "E-mail", pelo mesmo
+      motivo do `contactSupport`: em máquina sem cliente de e-mail o
+      clique não leva a lugar nenhum, e aí o que sobra é o que dá para
+      ler. Assim o endereço aparece em todas as páginas do site. O `href`
+      era um `mailto:` cru, sem assunto nem as três perguntas — era o
+      único caminho do site que perdia a qualificação.
+    */
+    { label: site.email, href: site.mailto, external: true },
   ] satisfies readonly SocialLink[],
   copyright: '© 2026 EngageMend. Todos os direitos reservados.',
 } as const;

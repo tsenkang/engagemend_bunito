@@ -4,7 +4,6 @@ import { Method } from '@/components/sections/home/Method';
 import { Problem } from '@/components/sections/home/Problem';
 import { Quote } from '@/components/sections/home/Quote';
 import { Statement } from '@/components/sections/home/Statement';
-import { Video } from '@/components/sections/home/Video';
 import { Marquee } from '@/components/ui/Marquee';
 import { marquee } from '@/lib/content';
 
@@ -16,7 +15,6 @@ export default function HomePage() {
       <Problem />
       <Method />
       <Statement />
-      <Video />
       <Quote />
       <Contact />
     </>

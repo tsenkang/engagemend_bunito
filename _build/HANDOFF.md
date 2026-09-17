@@ -1,8 +1,8 @@
 # HANDOFF — Site EngageMend (pasta `site_engagemend_bunito`)
 
-Última sessão: 2026-09-15 (décima primeira e décima segunda passadas — a crítica
-do Impeccable, os três P1 que saíram dela, a bolinha do preloader e a varredura
-de linha).
+Última sessão: 2026-09-17 (décima terceira e décima quarta passadas — o
+`mailto:` que não abre nada, o endereço em texto que virou o chão dos três
+fechos, e a saída do vídeo, **que pôs a Home em 90 pela primeira vez**).
 **Leia este arquivo inteiro antes de tocar em qualquer coisa.**
 
 O briefing original do Benjamin está em `_build/BRIEFING.md`, verbatim,
@@ -15,31 +15,31 @@ recuperado da transcrição. Ele continua sendo a fonte da verdade sobre
 
 As 5 fases construídas, build de produção limpo, três rotas estáticas.
 
-**Lighthouse mobile, remedido em 2026-09-14** (Lighthouse 12.8.2, headless,
+**Lighthouse mobile, remedido em 2026-09-17** (Lighthouse 12.8.2, headless,
 mediana de 5 execuções na Home e de 3 nas outras):
 
 | Rota | Performance | Acessibilidade | Boas práticas | SEO |
 |---|---|---|---|---|
-| `/` | **89** (88–89) | 100 | 100 | 100 |
-| `/servicos` | 92 (92–93) | 100 | 100 | 100 |
-| `/sobre` | 92 (92–92) | 100 | 100 | 100 |
+| `/` | **90** (90–90) | 100 | 100 | 100 |
+| `/servicos` | 92 (92–92) | 100 | 100 | 100 |
+| `/sobre` | 92 (92–95) | 100 | 100 | 100 |
 
-Meta do briefing: Performance ≥ 90, Acessibilidade 100, SEO 100. **Nenhuma das
-três bate agora**, e as três linhas são da décima primeira passada. O que as
-tirou de lá foi peso pedido depois, uma camada de cada vez: um ponto da costura
-de pixels (sétima), um do atalho das etapas (oitava), um do condutor de scroll
-do baralho (décima primeira, na Home) e um do fecho de mostarda novo (décima
-primeira, em `/sobre`). Acessibilidade, Boas práticas e SEO seguem em 100 nas
-três. Sem scroll horizontal de 320px a 1440px. CLS 0,001 na Home.
+Meta do briefing: Performance ≥ 90, Acessibilidade 100, SEO 100. **As três
+rotas batem a meta pela primeira vez**, e foi a saída do vídeo que fechou a
+conta — a Home vinha de 88 e passou a dar **90 cravado nas cinco execuções**.
+Sem scroll horizontal de 320px a 1440px. CLS 0,001 na Home, LCP 3,2s, TBT
+110ms.
 
-A Home recuperou um ponto na décima segunda passada (o contador do preloader
-saiu e a rampa animada que entrou é CSS puro: um tween do GSAP a menos, TBT de
-~150ms para ~113ms).
+> **Cuidado ao ler a história desta linha.** A Home passou por 97 → ~91 (três
+> famílias de fonte) → 89 (WebGL, resolvido tirando-o do celular) → 89 (costura
+> de pixels) → 88 (condutor do baralho) → 89 (preloader em CSS) → 88 → **90**.
+> Cada degrau para baixo foi peso que ele pediu, um de cada vez; o degrau para
+> cima foi peso que ele mandou tirar. Não existe ajuste de bytes nessa lista:
+> nesta Home, ponto de Performance é decisão de conteúdo, não de engenharia.
 
-**A conta que sobra, escrita sem enfeite:** a Home está 1 ponto abaixo da meta
-e a camada de movimento inteira vale 6. Não existe ajuste de bytes que devolva
-esses 2 pontos — devolver exige tirar movimento, e cada pedaço de movimento foi
-pedido. É decisão dele, não de engenharia.
+**O que ainda custa, se um dia precisar da conta:** a camada de movimento
+inteira vale 6 pontos, e o `ContourField` (WebGL) 3 deles — já desligado no
+celular desde a sexta passada. Tudo o que sobra foi pedido por ele.
 
 > **A dispersão da Home era de 6 pontos** entre execuções na mesma máquina e no
 > mesmo build — numa sessão a primeira medição deu 82 e a quarta, 93. **Era o
@@ -47,9 +47,106 @@ pedido. É decisão dele, não de engenharia.
 > cravado. A regra continua de pé — mediana de 5, nunca logo depois de um
 > `npm run build` —, porque quem garante que a dispersão não voltou é medir.
 
-A tabela anterior dizia 91 / 94 / 93, era da terceira passada e de uma execução
-por rota. Antes do corte desta passada, a remedição dava **89 / 91 / 92** — a
-Home abaixo da meta. O que mudou está na seção seguinte.
+Tabelas antigas que não valem mais: 91 / 94 / 93 (terceira passada, uma
+execução por rota, número inflado) e 89 / 91 / 92 (antes do corte da sexta).
+Nenhuma das duas serve de comparação — a primeira por método, a segunda por
+idade.
+
+---
+
+## A décima quarta passada: o vídeo saiu, e a Home bateu 90
+
+Ele mandou tirar o vídeo ("tir o video"). Saiu inteiro, e **foi a mudança mais
+barata que este site já teve**: Home de 88 para **90**, as cinco execuções em 90
+cravado, sem nenhuma dispersão. É a primeira vez que a Home bate a meta do
+briefing desde que ela caiu, na sétima passada.
+
+O vídeo estava no briefing (a linha 240 pede `<video>` com pôster e controles
+nativos, e o efeito 10 da seção de movimento é o reveal por `clip-path`). **É um
+desvio deliberado, decidido por ele**, e está registrado na lista de desvios.
+
+O que saiu, além da seção:
+
+- `components/sections/home/Video.tsx`, apagado.
+- `home.video` no `content.ts` (o `src` e o rótulo de leitor de tela).
+- **`videoReveal()` no `Motion.tsx`** — o efeito 10 do briefing. Sem a seção ele
+  virava função morta que procurava um `[data-video-frame]` que não existe mais.
+- A costura de pixels do topo do vídeo. **Eram sete no site, agora são seis**
+  (3 na Home).
+- O comentário do `Cursor.tsx` que explicava por que o disco não cresce sobre
+  `video` — atualizado, não apagado: a razão original (o disco pousava em cima
+  dos controles nativos) continua valendo como registro da decisão.
+
+**A costura entre as vizinhas foi conferida no navegador, não suposta.** O vídeo
+era uma faixa `ink` entre o "FAZEMOS ACONTECER" (creme) e a citação (`ink`).
+Tirando ele, o creme encosta direto no bloco escuro da citação — e **a citação
+já tinha a chegada certa para isso**: ela não usa costura de pixels, usa o
+`data-dark`, o `clip-path` que desce de cima e que é o efeito 6 do briefing.
+Antes esse efeito acontecia entre duas seções escuras, onde quase não se via.
+Agora ele acontece na fronteira de cor de verdade, que é onde foi desenhado para
+acontecer. A fronteira ficou melhor do que era, não pior.
+
+**Os arquivos continuam no disco e no git:** `public/EngageMend.mp4` (11,5 MB) e
+`public/video-poster.jpg`. Não foram apagados de propósito — o `.mp4` é o único
+material filmado que esta marca tem, e não existe nenhuma foto da EngageMend
+(pendência 2). Enquanto estiverem em `public/`, **os 11,5 MB continuam indo para
+o deploy sem ninguém baixar**. Apagar é uma linha; é decisão dele, e ele ainda
+não foi perguntado.
+
+---
+
+## A décima terceira passada: o `mailto:` não abre nada, e o chão que faltava
+
+Ele clicou em "Agendar conversa" no localhost e **não aconteceu nada**. O site
+não tinha defeito: console sem erro, os 16 links da Home com `href` e
+`pointer-events: auto`, o botão renderizado e clicável, as duas animações da
+passada anterior rodando certo (foi a primeira vez que alguém as viu).
+
+**A causa estava no Windows dele, e é mais geral do que parece.** O handler de
+`mailto:` apontava para o ProgId `AppXydk58wgm44se4b399557yyyj1w7mbmvd` — o app
+**Correio** — e **esse ProgId não existe mais no registro**. Não havia
+`HKCR:\mailto\shell\open\command`, e o Chrome não tinha handler próprio
+(`custom_handlers: nenhum`). Três camadas, nenhuma com nada atrás: o clique não
+falhava, ele não tinha para onde ir, e nada avisava.
+
+A Microsoft aposentou o Correio do Windows. **Máquina com Windows novo chega sem
+handler nenhum para `mailto:`** a menos que alguém configure o Outlook. E o
+público deste site é secretaria de prefeitura e escola, quase toda em webmail.
+Na décima primeira passada nós tínhamos trocado o compositor do Gmail por
+`mailto:` justamente para tirar o muro do login do Google — e pusemos outro no
+lugar. O login pelo menos dizia alguma coisa; o clique morto não dá sinal.
+
+**A correção: o endereço em texto, e não como link.** Texto não depende de
+cliente de e-mail, de conta Google nem de clique. É o chão que funciona sempre;
+o botão e o Gmail passaram a ser atalhos por cima dele, e um atalho pode falhar
+sem levar a conversão junto. O `select-all` faz o clique no endereço selecionar
+ele inteiro em vez de plantar um cursor no meio — CSS, não JavaScript.
+
+**A marcação estava duplicada palavra por palavra** na Home e no `ScheduleBlock`
+— o bloco mais caro do site para envelhecer errado. Virou
+`components/ui/ContactFallback.tsx`, um componente de servidor, e a copy virou
+`contactSupport` no `content.ts`. Os campos `note` / `gmailPrefix` /
+`gmailLabel` saíram de `schedule` **e** de `home.contact`, onde eram os mesmos
+três valores escritos duas vezes. Um lugar só agora conserta os três fechos.
+
+**O rodapé também mentia.** O link era `mailto:engagemend@gmail.com` cru, sem o
+assunto nem as três perguntas — **era o único caminho do site que perdia a
+qualificação** — e o rótulo era a palavra "E-mail", que não diz endereço nenhum
+para quem não pode clicar. Agora o rótulo é o próprio endereço e o `href` é o
+`site.mailto` completo. Com isso o endereço aparece em **todas** as páginas.
+
+A 404 já fazia certo desde a quinta passada (`app/not-found.tsx:133` escreve o
+endereço por extenso). A página menos importante do site era a única onde
+ninguém ficava sem saída.
+
+**Custo:** nenhum. Bundle byte a byte idêntico (87,4 kB nas três rotas, mesmos
+hashes de chunk), zero JavaScript novo, A11y/BP/SEO seguem 100 nas quatro
+rotas. A mediana da Home ver o aviso na tabela lá em cima.
+
+**O que não foi feito, de propósito:** não se mexeu em nenhuma configuração da
+máquina dele — ele pediu explicitamente que não. Para o PC dele voltar a abrir
+`mailto:` é Configurações → Aplicativos → Aplicativos padrão → Outlook, e é ele
+quem faz.
 
 ---
 
@@ -322,8 +419,9 @@ fronteira. Portada a **direção**, não o arquivo: lá o componente tinha o pr�
 `useLayoutEffect` e o próprio ScrollTrigger; aqui a grade é componente de
 servidor com `data-dissolve` e quem anima é o `Motion`, como todo o resto.
 
-Sete costuras, sempre onde a cor muda de verdade: 4 na Home, 2 em `/servicos`,
-1 em `/sobre`. Onde entra costura, o `clip-path` que revelava aquele bloco é
+Seis costuras, sempre onde a cor muda de verdade: 3 na Home, 2 em `/servicos`,
+1 em `/sobre`. Eram sete até o vídeo sair na décima quarta passada e levar a
+dele junto. Onde entra costura, o `clip-path` que revelava aquele bloco é
 pulado — os dois fazem o mesmo trabalho e juntos brigam. A checagem está no
 `darkZones` e no `accentWipe`.
 
@@ -764,9 +862,12 @@ briefing fixou, a 88px. Os divisores acima não são chute, são medida.
 
 ### Ritmo da Home
 
-hero (textura) → faixa rolante → problema → etapas com pin → **FAZEMOS
-ACONTECER** no tamanho gigante → vídeo → citação (bloco escuro) → **bloco
+hero (textura) → faixa rolante → problema → etapas (baralho de cartões) →
+**FAZEMOS ACONTECER** no tamanho gigante → citação (bloco escuro) → **bloco
 inteiro de mostarda** com o contato → rodapé escuro.
+
+O vídeo ficava entre o "FAZEMOS ACONTECER" e a citação, e saiu na décima quarta
+passada. Já não havia pin nenhum desde a décima.
 
 O bloco de mostarda é o ponto alto e a única vez que a cor de destaque ocupa a
 tela toda. Texto ali é `ink` **cheio** — `ink/70` sobre mostarda dá 3,87:1 e
@@ -777,11 +878,12 @@ em que escrevi esta seção.
 
 ## Pendências com ele
 
-1. **A Home abaixo de 90, de novo — e agora em 88.** Foi resolvida na sexta
-   passada (o campo de curvas saiu do celular) e voltou a cair com o peso que
-   ele pediu depois. Ver a conta no fim da seção "Onde está": devolver os dois
-   pontos exige tirar movimento, e cada pedaço de movimento foi pedido. É
-   decisão dele.
+1. ~~**A Home abaixo de 90.**~~ **Resolvida** na décima quarta passada, tirando
+   o vídeo: 90 cravado nas cinco execuções, e as três rotas batem a meta. Ficou
+   com um ponto de margem — ver "Riscos conhecidos". **O que sobrou desta
+   pendência é uma pergunta:** `public/EngageMend.mp4` (11,5 MB) e
+   `public/video-poster.jpg` continuam no disco e no git, indo para o deploy sem
+   ninguém baixar. Apagar é decisão dele e ele ainda não foi perguntado.
 2. **Não existe foto.** Enquanto não existir, o site continua sendo tipografia
    sobre cor. É a última coisa que separa este site de um site excelente — e
    nenhuma tipografia resolve sozinha. Uma sessão de fotos numa maratona real
@@ -815,6 +917,13 @@ em que escrevi esta seção.
    diferentes — "Agendar conversa" (e-mail) e "Falar conosco" (que não fala com
    ninguém, só rola até o fim) —, e o pacote de compartilhamento da pendência 3.
 
+9. **Formulário de verdade, e agora com motivo.** A décima terceira passada pôs
+   um chão embaixo do `mailto:`, mas o caminho primário continua dependendo de
+   o visitante ter onde escrever. Um formulário (Netlify Forms resolve, sem
+   backend) tira essa dependência inteira. **Depende da decisão de domínio**, que
+   é a pendência 3 — por isso não foi feito. Contraria a seção 9 do briefing, do
+   mesmo jeito que o `mailto:` contrariou, e precisa do OK dele.
+
 8. **Rótulos de seção.** `01 — Cidades de até 50 mil habitantes` e companhia
    saem de `labels` no `content.ts`. São expressões que já existem no texto ou
    nas keywords dele; a única invenção é "role para descer", que é instrução de
@@ -834,6 +943,10 @@ em que escrevi esta seção.
   grande. As palavras e a pontuação são as do briefing, intactas.
 - **Costura de pixels entre seções**, que o briefing não pede. Veio do site
   anterior, a pedido dele — ver a sétima passada.
+- **O vídeo saiu da Home** (décima quarta passada, a pedido dele). O briefing
+  pede o `<video>` na linha 240 e o reveal por `clip-path` como efeito 10; os
+  dois saíram juntos. **Pagou 2 pontos de Performance na Home** (88 → 90) e
+  acabou com a dispersão da medição. O arquivo continua em `public/`.
 - **Orçamento de `scrub` estourado.** O briefing limita a 2 por rota; com a
   costura a Home tem 5 (eram 6 até o trilho horizontal sair) e `/servicos` 3. Pedido depois, sabendo disso. O que
   segura a conta é o ScrollTrigger só trabalhar enquanto a costura está na faixa
@@ -911,15 +1024,14 @@ A régua da esquerda lê o scroll num rAF próprio, sem criar ScrollTrigger.
 
 ## Riscos conhecidos
 
-- **Reveal preso.** Bloco escuro e vídeo começam com `clip-path` aplicado pelo
+- **Reveal preso.** Os blocos escuros começam com `clip-path` aplicado pelo
   GSAP e só abrem quando o ScrollTrigger dispara. Se o JavaScript quebrar depois
   de o GSAP montar, essas seções ficam escondidas.
-- **A Home está em 89, um ponto abaixo da meta.** Três famílias de fonte
-  levaram-na de 97 para ~91, o WebGL para 89 (resolvido tirando-o do celular), a
-  costura de pixels de volta para 89 e o condutor de scroll do baralho para 88 —
-  e a saída do contador do preloader devolveu um, de volta para 89.
-  Não existe margem nenhuma: qualquer peso novo na Home sai do vermelho direto.
-  Remeça sempre com mediana de 5 antes de dizer que passou.
+- **A Home bate a meta por um ponto de margem.** Está em 90 e a meta é 90.
+  Qualquer camada nova de peso tira ela de lá de novo — foi exatamente assim que
+  ela caiu antes, um ponto por vez. Quem for acrescentar movimento a esta rota
+  mede antes e mede depois, mediana de 5.
+
 - **Qualquer gatilho de scroll novo na Home abaixo da seção do método nasce
   torto** se o pin não for remedido antes dele. Ver a sétima passada: é o que o
   `refreshPriority: 1` no pin conserta, e ele precisa continuar lá.
